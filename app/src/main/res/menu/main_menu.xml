@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <!--
+        showAsAction设置item是显示在溢出菜单中还是在ActionBar上：
+        always:一直在ActionBar上
+        ifRoom:当ActionBar有可用空间才显示到ActionBar上
+        never:永源不显示在ActionBar
+        withText:把图标和文字显示在ActionBar，但空间不够时可能显示不全
+    -->
+    <item android:id="@+id/room_api"
+        android:title="房间api"
+        app:showAsAction="always"></item>
+</menu>

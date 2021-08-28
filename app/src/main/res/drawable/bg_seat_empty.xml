@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <stroke
+        android:width="3dp"
+        android:color="#ebebeb" />
+    <!-- 形状颜色（如果需要的是空心矩形, 则形状颜色设置为透明） -->
+    <solid android:color="#efeff4" />
+    <corners android:radius="50dp" />
+    <gradient
+        android:startColor="#ebebeb"
+        android:endColor="#ffffff"
+        android:type="radial"
+        android:gradientRadius="30dp"
+        />
+</shape>

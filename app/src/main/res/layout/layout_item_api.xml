@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright © 2021 RongCloud. All rights reserved.
+  -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/api_fun"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="6dp"
+    android:layout_marginBottom="6dp"
+    android:layout_marginLeft="4dp"
+    android:layout_marginRight="4dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
+    android:background="@drawable/selector_main_item"
+    android:gravity="center"
+    android:text="麦位静音"
+    android:textColor="@color/black"
+    android:textSize="13sp" />

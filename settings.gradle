@@ -1,0 +1,3 @@
+rootProject.name = "QuickDemo"
+include ':app'
+//include ':RCVoiceRoomLib'

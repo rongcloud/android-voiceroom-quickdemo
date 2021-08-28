@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp"
+    tools:context="cn.rongcloud.quickdemo.MainActivity">
+
+    <!--    房主信息-->
+    <include
+        android:id="@+id/creater"
+        layout="@layout/layout_seat_item" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rl_seat"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp" />
+
+    <TextView
+        android:id="@+id/add_event_listeren"
+        style="@style/style_main_btn"
+        android:background="@drawable/selector_press_main"
+        android:text="Add Event Listener" />
+
+    <TextView
+        android:id="@+id/create_and_join"
+        style="@style/style_main_btn"
+        android:background="@drawable/selector_press_main"
+        android:enabled="false"
+        android:text="createAndJoin" />
+
+    <TextView
+        android:id="@+id/enter_seat"
+        style="@style/style_main_btn"
+        android:background="@drawable/selector_press_main"
+        android:enabled="false"
+        android:text="Enter Seat" />
+
+    <TextView
+        android:id="@+id/lock_all"
+        style="@style/style_main_btn"
+        android:background="@drawable/selector_press_main"
+        android:enabled="false"
+        android:text="Lock All Seat" />
+
+    <TextView
+        android:id="@+id/mute_all"
+        style="@style/style_main_btn"
+        android:background="@drawable/selector_press_main"
+        android:enabled="false"
+        android:text="Mute All Seat" />
+</androidx.appcompat.widget.LinearLayoutCompat>
