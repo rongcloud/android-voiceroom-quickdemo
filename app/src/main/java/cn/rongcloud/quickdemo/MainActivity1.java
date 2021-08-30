@@ -94,7 +94,7 @@ public class MainActivity1 extends AppCompatActivity implements View.OnClickList
         int id = view.getId();
         switch (id) {
             case R.id.add_event_listeren:
-                QuickEventListener.get().setVoiceRoomEngine(RCVoiceRoomEngine.getInstance());
+                QuickEventListener.get().setVoiceRoomEngine(this,RCVoiceRoomEngine.getInstance());
                 add_event_listeren.setEnabled(false);
                 //create 可用
                 create_and_join.setEnabled(true);

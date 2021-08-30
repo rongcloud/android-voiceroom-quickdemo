@@ -4,11 +4,8 @@ import android.app.Application;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -17,12 +14,10 @@ import com.bcq.adapter.recycle.RcyHolder;
 import com.bcq.adapter.recycle.RcySAdapter;
 
 import cn.rongcloud.quickdemo.uitls.AccoutManager;
-import cn.rongcloud.quickdemo.uitls.GsonUtil;
 import cn.rongcloud.quickdemo.uitls.KToast;
 import cn.rongcloud.quickdemo.uitls.UIKit;
 import cn.rongcloud.voiceroom.api.RCVoiceRoomEngine;
 import cn.rongcloud.voiceroom.api.callback.RCVoiceRoomCallback;
-import cn.rongcloud.voiceroom.model.RCVoiceSeatInfo;
 
 public class ConnectActivity extends AppCompatActivity {
     private RecyclerView rl_accout;
@@ -42,7 +37,10 @@ public class ConnectActivity extends AppCompatActivity {
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        connect(accout);
+                        // TODO: 2021/8/30
+                        //  模拟创建房间 position == 0
+                        //  加入房间 postiton >0
+                        connect(accout, position == 0);
                     }
                 });
             }
@@ -50,17 +48,23 @@ public class ConnectActivity extends AppCompatActivity {
         ((IAdapte) rl_accout.getAdapter()).setData(AccoutManager.getAccounts(), true);
     }
 
-    private void connect(AccoutManager.Accout accout) {
+    private void connect(AccoutManager.Accout accout, boolean isCreater) {
         setTitle(accout.getName() + " 连接中...");
         //先断开连接
         RCVoiceRoomEngine.getInstance().disConnect();
+        AccoutManager.setCurrent(accout.getUserId());
         //连接
         RCVoiceRoomEngine.getInstance().connectWithToken(
                 (Application) UIKit.getContext(), accout.getToken(), new RCVoiceRoomCallback() {
                     @Override
                     public void onSuccess() {
                         KToast.showToast("connect success");
-                        UIKit.startActivity(ConnectActivity.this, MainActivity.class);
+                        if (isCreater) {
+                            UIKit.startActivity(ConnectActivity.this, CreaterActivity.class);
+                        } else {
+                            UIKit.startActivity(ConnectActivity.this, JoinActivity.class);
+                        }
+//                        UIKit.startActivity(ConnectActivity.this, MainActivity.class);
                         finish();
                     }
 

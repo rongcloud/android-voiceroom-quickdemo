@@ -1,11 +1,14 @@
 package cn.rongcloud.quickdemo.uitls;
 
+import cn.rongcloud.quickdemo.ApiFun;
 import cn.rongcloud.voiceroom.model.RCVoiceRoomInfo;
 
 /**
  * 语聊房api封装接口
  */
 public interface Api {
+    String EVENT_REJECT_PICK = "VoiceRoom_RejectManagePick";// 拒绝上麦
+    String EVENT_AGREE_PICK = "VoiceRoom_AgreeManagePick";// 同意上麦
 
     interface IResultBack<T> {
         void onResult(T result);
@@ -16,7 +19,7 @@ public interface Api {
      *
      * @param index
      */
-    void handleRoomApi(int index, String action);
+    void handleRoomApi(ApiFun apiFun, Object extra);
 
     /**
      * 处理麦位api调用
@@ -25,9 +28,15 @@ public interface Api {
      * @param action
      * @param seatIndex
      */
-    void handleSeatApi(int apiPosition, String action, int seatIndex);
+    void handleSeatApi(ApiFun apiFun, int seatIndex);
 
     RCVoiceRoomInfo getRoomInfo();
+
+    void createAndJoin(String roomId, RCVoiceRoomInfo roomInfo, IResultBack<Boolean> resultBack);
+
+    void joinRoom(String roomId, IResultBack<Boolean> resultBack);
+
+    void leaveRoom(IResultBack<Boolean> resultBack);
 
     /**
      * 全麦锁定

@@ -3,6 +3,7 @@ package cn.rongcloud.quickdemo.uitls;
 import android.text.TextUtils;
 import android.util.Log;
 
+import cn.rongcloud.quickdemo.ApiFun;
 import cn.rongcloud.voiceroom.api.RCVoiceRoomEngine;
 import cn.rongcloud.voiceroom.api.callback.RCVoiceRoomCallback;
 import cn.rongcloud.voiceroom.model.RCVoiceRoomInfo;
@@ -19,99 +20,100 @@ public class VoiceRoomApi implements Api {
         return api;
     }
 
-
-//"全麦锁定",
-//"全麦解锁",
-//"全麦静音",
-//"取消全麦静音",
-//"修改名称",
-//"修改麦位数"
-
     /**
      * 处理房间api调用
      *
-     * @param index
+     * @param apiFun
      */
     @Override
-    public void handleRoomApi(int index, String action) {
-        switch (index) {
-            case 0://全麦锁定
+    public void handleRoomApi(ApiFun apiFun, Object extra) {
+        switch (apiFun) {
+            case room_all_lock://全麦锁定
                 lockAll(true);
                 break;
-            case 1://全麦解锁
+            case room_all_lock_nu://全麦解锁
                 lockAll(false);
                 break;
-            case 2://全麦静音
+            case room_all_mute://全麦静音
                 muteAll(true);
                 break;
-            case 3://取消全麦静音
+            case room_all_mute_un://取消全麦静音
                 muteAll(false);
                 break;
-            case 4://修改名称
+            case room_update_name://修改名称
                 String name = roomInfo.getRoomName();
                 if (name.contains("_")) {
                     String[] arr = name.split("_");
                     String pre = arr[0];
                     String id = arr[1];
-                    if ("跟新".equals(pre)){
+                    if ("跟新".equals(pre)) {
                         name = "Room_" + id;
-                    }else {
+                    } else {
                         name = "跟新_" + id;
                     }
                 }
                 updateRoomName(name, null);
                 break;
-            case 5://修改麦位数
+            case room_update_count://修改麦位数
                 int count = roomInfo.getSeatCount() != 9 ? 9 : 5;
                 updateSeatCount(count, null);
                 break;
+            case invite_seat://邀请上麦
+                if (null != extra && extra instanceof String) {
+                    invitedEnterSeat(extra.toString(), null);
+                }
+                break;
+            case room_free://自由模式
+                roomInfo.setFreeEnterSeat(true);
+                updateRoomInfo(roomInfo, null);
+                break;
+            case room_free_un://申请模式
+                roomInfo.setFreeEnterSeat(false);
+                updateRoomInfo(roomInfo, null);
+                break;
         }
     }
-
-// "麦位静音",
-// "取消静音",
-// "麦位锁定",
-// "取消锁定",
-// "下麦",
-// "上麦",
-// "邀请上麦"
-// "取消邀请上麦",
-//  扩展属性
 
     /**
      * 处理麦位api调用
      */
     @Override
-    public void handleSeatApi(int apiPosition, String action, int seatIndex) {
-        switch (apiPosition) {
-            case 0://麦位静音
+    public void handleSeatApi(ApiFun apiFun, int seatIndex) {
+        switch (apiFun) {
+            case seat_mute://麦位静音
                 muteSeat(seatIndex, true, null);
                 break;
-            case 1://取消静音
+            case seat_mute_un://取消静音
                 muteSeat(seatIndex, false, null);
                 break;
-            case 2://麦位锁定
+            case seat_lock://麦位锁定
                 lockSeat(seatIndex, true, null);
                 break;
-            case 3://取消锁定
+            case seat_lock_un://取消锁定
                 lockSeat(seatIndex, false, null);
                 break;
-            case 4://下麦
+            case seat_left://下麦
                 leaveSeat(null);
                 break;
-            case 5://上麦
+            case seat_enter://上麦
                 enterSeat(seatIndex, null);
                 break;
-            case 6://邀请上麦
+            case seat_request://请求上麦
                 requestSeat(null);
                 break;
-            case 7://取消邀请上麦
+            case seat_request_cancel://取消请求上麦
                 cancelRequestSeat(null);
                 break;
-            case 8://扩展属性
+            case seat_extra://扩展属性
                 updateSeatExtra(seatIndex, "扩展属性", null);
                 break;
         }
+    }
+
+    // 邀请上麦
+    public void invitedEnterSeat(String userId, IResultBack<Boolean> resultBack) {
+        RCVoiceRoomEngine.getInstance().pickUserToSeat(
+                userId, new DefauRoomCallback("invitedIntoSeat", "邀请上麦", resultBack));
     }
 
     @Override
@@ -119,6 +121,72 @@ public class VoiceRoomApi implements Api {
         return roomInfo;
     }
 
+    @Override
+    public void createAndJoin(String roomId, RCVoiceRoomInfo roomInfo, IResultBack<Boolean> resultBack) {
+        if (TextUtils.isEmpty(roomId)) {
+            if (null != resultBack) resultBack.onResult(false);
+            return;
+        }
+        if (null == roomInfo || TextUtils.isEmpty(roomInfo.getRoomName()) || roomInfo.getSeatCount() < 1) {
+            if (null != resultBack) resultBack.onResult(false);
+            return;
+        }
+        RCVoiceRoomEngine.getInstance().createAndJoinRoom(roomId, roomInfo, new RCVoiceRoomCallback() {
+            @Override
+            public void onSuccess() {
+                KToast.showToastWithLag(TAG, "crateAndJoin#onSuccess");
+                //房主上麦 index = 0
+                VoiceRoomApi.getApi().enterSeat(0, resultBack);
+            }
+
+            @Override
+            public void onError(int code, String message) {
+                String info = "crateAndJoin#onError [" + code + "]:" + message;
+                KToast.showToastWithLag(TAG, info);
+                if (null != resultBack) resultBack.onResult(false);
+            }
+        });
+    }
+
+    @Override
+    public void joinRoom(String roomId, IResultBack<Boolean> resultBack) {
+        if (TextUtils.isEmpty(roomId)) {
+            if (null != resultBack) resultBack.onResult(false);
+            return;
+        }
+        RCVoiceRoomEngine.getInstance().joinRoom(roomId, new RCVoiceRoomCallback() {
+            @Override
+            public void onSuccess() {
+                KToast.showToastWithLag(TAG, "joinRoom#onSuccess");
+                if (null != resultBack) resultBack.onResult(true);
+            }
+
+            @Override
+            public void onError(int code, String message) {
+                String info = "joinRoom#onError [" + code + "]:" + message;
+                KToast.showToastWithLag(TAG, info);
+                if (null != resultBack) resultBack.onResult(false);
+            }
+        });
+    }
+
+    @Override
+    public void leaveRoom(IResultBack<Boolean> resultBack) {
+        RCVoiceRoomEngine.getInstance().leaveRoom(new RCVoiceRoomCallback() {
+            @Override
+            public void onSuccess() {
+                KToast.showToastWithLag(TAG, "leaveRoom#onSuccess");
+                if (null != resultBack) resultBack.onResult(true);
+            }
+
+            @Override
+            public void onError(int code, String message) {
+                String info = "leaveRoom#onError [" + code + "]:" + message;
+                KToast.showToastWithLag(TAG, info);
+                if (null != resultBack) resultBack.onResult(false);
+            }
+        });
+    }
 
     @Override
     public void lockAll(boolean locked) {

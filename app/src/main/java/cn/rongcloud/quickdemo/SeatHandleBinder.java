@@ -51,8 +51,8 @@ public class SeatHandleBinder {
             public void onClick(View view) {
                 ApiFunDialogHelper.helper().showSeatApiDialog(activity.get(), new ApiFunDialogHelper.OnApiClickListener() {
                     @Override
-                    public void onApiClick(View v, int position) {
-                        onApi(position, seatInfo, index);
+                    public void onApiClick(View v, ApiFun apiFun) {
+                        onApi(apiFun, seatInfo, index);
                     }
                 });
             }
@@ -62,12 +62,11 @@ public class SeatHandleBinder {
     /**
      * 处理api功能
      *
-     * @param apiPos
+     * @param apiFun
      * @param seatInfo
      */
-    public void onApi(int apiPos, RCVoiceSeatInfo seatInfo, int seatIndex) {
-        String action = ApiFunDialogHelper.SEAT_API[apiPos];
-        KToast.showToast(action);
-        VoiceRoomApi.getApi().handleSeatApi(apiPos, action, seatIndex);
+    public void onApi(ApiFun apiFun, RCVoiceSeatInfo seatInfo, int seatIndex) {
+        KToast.showToast(apiFun.name());
+        VoiceRoomApi.getApi().handleSeatApi(apiFun, seatIndex);
     }
 }

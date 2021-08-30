@@ -1,5 +1,7 @@
 package cn.rongcloud.quickdemo.uitls;
 
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -21,8 +23,31 @@ public class AccoutManager {
         accounts.add(accout);
     }
 
+    private static String currentId;//当前账号
+
     public static List<Accout> getAccounts() {
         return accounts;
+    }
+
+    public static String getCurrentId() {
+        return currentId;
+    }
+
+    public static void setCurrent(String currentId) {
+        AccoutManager.currentId = currentId;
+    }
+
+    public static List<Accout> getOtherAccounts() {
+        List<Accout> others = new ArrayList<>();
+        if (TextUtils.isEmpty(currentId)) {
+            return accounts;
+        }
+        for (Accout accout : accounts) {
+            if (!currentId.equals(accout.userId)) {
+                others.add(accout);
+            }
+        }
+        return others;
     }
 
     @Nullable

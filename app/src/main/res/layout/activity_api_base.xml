@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp"
+    tools:context="cn.rongcloud.quickdemo.MainActivity">
+
+    <TextView
+        android:id="@+id/room_mode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="模式："
+        android:textSize="18sp" />
+    <!--    房主信息-->
+    <include
+        android:id="@+id/creater"
+        layout="@layout/layout_seat_item" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rl_seat"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/add_event_listeren"
+        style="@style/style_main_btn"
+        android:background="@drawable/selector_press_main"
+        android:text="Add Event Listener" />
+
+    <TextView
+        android:id="@+id/create_and_join"
+        style="@style/style_main_btn"
+        android:background="@drawable/selector_press_main"
+        android:enabled="false"
+        android:text="createAndJoin" />
+
+</androidx.appcompat.widget.LinearLayoutCompat>
