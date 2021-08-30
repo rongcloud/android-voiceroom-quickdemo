@@ -161,7 +161,7 @@ public abstract class BaseApiActivity extends AppCompatActivity implements View.
     public void onApiClick(View v, ApiFun action) {
         KToast.showToast(action.name());
         if (action.equals(ApiFun.invite_seat)) {
-            ApiFunDialogHelper.helper().showSelectDialog(this, "邀请人列表", new Api.IResultBack<String>() {
+            ApiFunDialogHelper.helper().showSelectDialog(this, "观众列表", new Api.IResultBack<String>() {
                 @Override
                 public void onResult(String result) {
                     String userId = result;

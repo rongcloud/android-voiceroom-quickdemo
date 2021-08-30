@@ -1,6 +1,7 @@
 package cn.rongcloud.quickdemo;
 
 import android.app.Activity;
+import android.text.TextUtils;
 import android.view.View;
 
 import com.bcq.adapter.recycle.RcyHolder;
@@ -46,6 +47,7 @@ public class SeatHandleBinder {
         holder.setVisible(R.id.seat_locked, lock);
         holder.setVisible(R.id.seat_mute, seatInfo.isMute());
         holder.setText(R.id.member_name, AccoutManager.getAccoutName(seatInfo.getUserId()));
+        holder.setText(R.id.member_extra, TextUtils.isEmpty(seatInfo.getExtra()) ? "扩展：" : "扩展：" + seatInfo.getExtra());
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

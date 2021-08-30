@@ -105,7 +105,7 @@ public class VoiceRoomApi implements Api {
                 cancelRequestSeat(null);
                 break;
             case seat_extra://扩展属性
-                updateSeatExtra(seatIndex, "扩展属性", null);
+                updateSeatExtra(seatIndex, "附加" + seatIndex, null);
                 break;
         }
     }

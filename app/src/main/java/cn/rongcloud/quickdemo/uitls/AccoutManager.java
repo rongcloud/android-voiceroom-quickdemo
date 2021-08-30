@@ -68,7 +68,7 @@ public class AccoutManager {
     @NonNull
     public static String getAccoutName(@Nullable String userId) {
         Accout accout = getAccout(userId);
-        return null == accout ? "" : accout.getName();
+        return null == accout ? "离线" : accout.getName();
     }
 
     public static class Accout {
