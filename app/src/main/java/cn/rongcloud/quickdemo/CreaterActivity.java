@@ -2,9 +2,7 @@ package cn.rongcloud.quickdemo;
 
 import android.view.View;
 
-import cn.rongcloud.quickdemo.interfaces.Api;
 import cn.rongcloud.quickdemo.interfaces.IResultBack;
-import cn.rongcloud.quickdemo.uitls.VoiceRoomApi;
 import cn.rongcloud.quickdemo.widget.ApiFunDialogHelper;
 import cn.rongcloud.voiceroom.model.RCVoiceRoomInfo;
 

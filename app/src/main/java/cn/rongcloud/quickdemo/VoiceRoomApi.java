@@ -1,11 +1,11 @@
-package cn.rongcloud.quickdemo.uitls;
+package cn.rongcloud.quickdemo;
 
 import android.text.TextUtils;
 import android.util.Log;
 
-import cn.rongcloud.quickdemo.ApiFun;
 import cn.rongcloud.quickdemo.interfaces.Api;
 import cn.rongcloud.quickdemo.interfaces.IResultBack;
+import cn.rongcloud.quickdemo.uitls.KToast;
 import cn.rongcloud.voiceroom.api.RCVoiceRoomEngine;
 import cn.rongcloud.voiceroom.api.callback.RCVoiceRoomCallback;
 import cn.rongcloud.voiceroom.model.RCVoiceRoomInfo;

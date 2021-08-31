@@ -2,7 +2,6 @@ package cn.rongcloud.quickdemo;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -18,9 +17,7 @@ import com.bcq.adapter.recycle.RcySAdapter;
 
 import java.util.List;
 
-import cn.rongcloud.quickdemo.interfaces.Api;
 import cn.rongcloud.quickdemo.interfaces.IResultBack;
-import cn.rongcloud.quickdemo.uitls.VoiceRoomApi;
 import cn.rongcloud.quickdemo.widget.ApiFunDialogHelper;
 import cn.rongcloud.voiceroom.api.RCVoiceRoomEngine;
 import cn.rongcloud.voiceroom.model.RCVoiceRoomInfo;
@@ -32,8 +29,10 @@ import cn.rongcloud.voiceroom.model.RCVoiceSeatInfo;
  * 2.创建或者加入房间
  * 3.房主上麦 seatIndex = 0
  */
-public abstract class BaseApiActivity extends AppCompatActivity implements View.OnClickListener, ApiFunDialogHelper.OnApiClickListener
-        , QuickEventListener.SeatListObserver, QuickEventListener.RoomInforObserver {
+public abstract class BaseApiActivity extends AppCompatActivity implements View.OnClickListener,
+        ApiFunDialogHelper.OnApiClickListener,
+        QuickEventListener.SeatListObserver,
+        QuickEventListener.RoomInforObserver {
     protected final String TAG = this.getClass().getSimpleName();
     protected final static String LEFT_ROOM = "Leave Room";
     //便于测试 统一房间Id

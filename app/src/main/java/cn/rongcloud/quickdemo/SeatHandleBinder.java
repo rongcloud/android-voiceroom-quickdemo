@@ -9,7 +9,6 @@ import com.bcq.adapter.recycle.RcyHolder;
 import java.lang.ref.WeakReference;
 
 import cn.rongcloud.quickdemo.uitls.AccoutManager;
-import cn.rongcloud.quickdemo.uitls.VoiceRoomApi;
 import cn.rongcloud.quickdemo.widget.ApiFunDialogHelper;
 import cn.rongcloud.voiceroom.model.RCVoiceSeatInfo;
 
