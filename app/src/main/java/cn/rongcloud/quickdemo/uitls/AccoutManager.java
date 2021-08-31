@@ -1,7 +1,5 @@
 package cn.rongcloud.quickdemo.uitls;
 
-import android.text.TextUtils;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -16,7 +14,15 @@ public class AccoutManager {
         //  Accout accout = new Accout("Your UserId", "Your UserName");
         //  accout.token = "Your Token ";//token 需和userId一一对应
         //  accounts.add(accout);
-
+        Accout accout = new Accout("92814153-3330-48dd-9627-6eb190c3e101", "测试1");
+        accout.token = "r3CkHmcqe/7SOuRelcAA6T0EGJbKyhhJd4lM5R1sjd4dqebDKYJHlNs5peb8z1U4vlcCu5XJ7aNNTV5nptNBkQ==@4d1h.cn.rongnav.com;4d1h.cn.rongcfg.com";
+        accounts.add(accout);
+        accout = new Accout("675aac38-0fa5-433d-a708-f2e2ba161f3b", "测试2");
+        accout.token = "Kv7dLdFVKJdTAdg4BOKgpsPrFVLmLzSKVx3O8NKc5NpDAzQBwNcYDds5peb8z1U4oXQ47RkwlGxgj+9Kp58cvg==@4d1h.cn.rongnav.com;4d1h.cn.rongcfg.com";
+        accounts.add(accout);
+        accout = new Accout("05568b81-ac7a-4276-b629-6b433c275ea3", "测试");
+        accout.token = "NnnW2SbMYsqtiCwO115diWV0kvUlkYnag78TV70FFAFq3AsJsuiCHts5peb8z1U4sgYlNnsio/whmfXNbv6c3w==@4d1h.cn.rongnav.com;4d1h.cn.rongcfg.com";
+        accounts.add(accout);
     }
 
     private static String currentId;//当前账号
