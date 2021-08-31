@@ -18,6 +18,8 @@ import cn.rongcloud.quickdemo.uitls.KToast;
 import cn.rongcloud.quickdemo.uitls.UIKit;
 import cn.rongcloud.voiceroom.api.RCVoiceRoomEngine;
 import cn.rongcloud.voiceroom.api.callback.RCVoiceRoomCallback;
+import io.rong.imlib.RongCoreClient;
+import io.rong.imlib.RongIMClient;
 
 public class ConnectActivity extends AppCompatActivity {
     private RecyclerView rl_accout;
@@ -32,15 +34,16 @@ public class ConnectActivity extends AppCompatActivity {
         rl_accout.setAdapter(new RcySAdapter<AccoutManager.Accout, RcyHolder>(this, R.layout.layout_accout_item) {
             @Override
             public void convert(RcyHolder holder, AccoutManager.Accout accout, int position) {
-                holder.setText(R.id.user_name, accout.getName());
+                final boolean isCreater = position == 0;
+                holder.setText(R.id.user_name, accout.getName() + (isCreater ? "   模拟房主：创建房间" : "   模拟观众：加入房间"));
                 holder.setText(R.id.user_id, accout.getUserId());
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        // TODO: 2021/8/30
-                        //  模拟创建房间 position == 0
+                        // TODO: 2021/8/30 模拟两种场景
+                        //  创建房间 position == 0
                         //  加入房间 postiton >0
-                        connect(accout, position == 0);
+                        connect(accout, isCreater);
                     }
                 });
             }
@@ -64,8 +67,8 @@ public class ConnectActivity extends AppCompatActivity {
                         } else {
                             UIKit.startActivity(ConnectActivity.this, JoinActivity.class);
                         }
-//                        UIKit.startActivity(ConnectActivity.this, MainActivity.class);
-                        finish();
+                        //fix：可重写连接
+//                        finish();
                     }
 
                     @Override

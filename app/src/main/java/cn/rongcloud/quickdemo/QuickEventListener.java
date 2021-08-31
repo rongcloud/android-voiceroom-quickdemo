@@ -1,16 +1,15 @@
 package cn.rongcloud.quickdemo;
 
 import android.app.Activity;
-import android.text.TextUtils;
 import android.util.Log;
-import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.rongcloud.quickdemo.interfaces.IResultBack;
 import cn.rongcloud.quickdemo.uitls.AccoutManager;
-import cn.rongcloud.quickdemo.uitls.Api;
+import cn.rongcloud.quickdemo.interfaces.Api;
 import cn.rongcloud.quickdemo.uitls.GsonUtil;
 import cn.rongcloud.quickdemo.uitls.KToast;
 import cn.rongcloud.quickdemo.uitls.VoiceRoomApi;
@@ -18,8 +17,10 @@ import cn.rongcloud.quickdemo.widget.ApiFunDialogHelper;
 import cn.rongcloud.voiceroom.api.IRCVoiceRoomEngine;
 import cn.rongcloud.voiceroom.api.RCVoiceRoomEngine;
 import cn.rongcloud.voiceroom.api.callback.RCVoiceRoomEventListener;
+import cn.rongcloud.voiceroom.api.callback.RCVoiceRoomResultCallback;
 import cn.rongcloud.voiceroom.model.RCVoiceRoomInfo;
 import cn.rongcloud.voiceroom.model.RCVoiceSeatInfo;
+import io.rong.imlib.RongIMClient;
 import io.rong.imlib.model.Message;
 
 public class QuickEventListener implements RCVoiceRoomEventListener {
@@ -36,6 +37,7 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
         void onSeat(int index, RCVoiceSeatInfo info);
     }
 
+    private final static Object obj = new Object();
     private SeatListObserver seatListObserver;
     private RoomInforObserver roomInforObserver;
     private SeatObserver seatObserver;
@@ -47,7 +49,19 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
     private List<RCVoiceSeatInfo> mSeatInfos;
     private List<String> mAudienceIds;
     private RCVoiceRoomInfo roomInfo;
+
     private QuickEventListener() {
+        RongIMClient.getInstance().setConnectionStatusListener(new RongIMClient.ConnectionStatusListener() {
+            @Override
+            public void onChanged(ConnectionStatus connectionStatus) {
+                if (connectionStatus == RongIMClient.ConnectionStatusListener.ConnectionStatus.KICKED_OFFLINE_BY_OTHER_CLIENT) {
+                    KToast.showToast("当前账号已在其他设备登录，请重新连接");
+                    if (activity != null && null != activity.get()) {
+                        activity.get().finish();
+                    }
+                }
+            }
+        });
     }
 
     public static QuickEventListener get() {
@@ -67,37 +81,92 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
         return this;
     }
 
+    /**
+     * 监听麦位列表变化
+     *
+     * @param observer
+     */
     public void observeSeatList(SeatListObserver observer) {
         this.seatListObserver = observer;
     }
 
+    /**
+     * 监听麦位变化
+     *
+     * @param observer
+     */
     public void observeSeat(SeatObserver observer) {
         this.seatObserver = observer;
     }
 
 
+    /**
+     * 监听房间信息变化
+     *
+     * @param observer
+     */
     public void observeRoomInfo(RoomInforObserver observer) {
         this.roomInforObserver = observer;
     }
 
+    /**
+     * 获取当前用户进入房间后 加入的观众列表
+     *
+     * @return
+     */
     public List<String> getAudienceIds() {
         return mAudienceIds;
     }
 
-    private RCVoiceSeatInfo getSeatInfo(int index) {
-        int count = mSeatInfos.size();
-        if (index > -1 && index < count) {
-            return mSeatInfos.get(index);
+    /**
+     * 根据用户id获取麦位信息
+     *
+     * @param userId
+     * @return 麦位信息
+     */
+    private RCVoiceSeatInfo getSeatInfo(String userId) {
+        synchronized (obj) {
+            int count = mSeatInfos.size();
+            for (int i = 0; i < count; i++) {
+                RCVoiceSeatInfo s = mSeatInfos.get(i);
+                if (userId.equals(s.getUserId())) {
+                    return s;
+                }
+            }
+
+            return null;
         }
-        return null;
     }
 
+    /**
+     * 获取可用麦位索引
+     *
+     * @return 可用麦位索引
+     */
+    private int getAvailableSeatIndex() {
+        synchronized (obj) {
+            int availableIndex = -1;
+            for (int i = 0; i < mSeatInfos.size(); i++) {
+                RCVoiceSeatInfo seat = mSeatInfos.get(i);
+                if (RCVoiceSeatInfo.RCSeatStatus.RCSeatStatusEmpty == seat.getStatus()) {
+                    availableIndex = i;
+                    break;
+                }
+            }
+            return availableIndex;
+        }
+    }
 
     @Override
     public void onRoomKVReady() {
         Log.d(TAG, "onRoomKVReady");
     }
 
+    /**
+     * 房间信息跟新回调
+     *
+     * @param room
+     */
     @Override
     public void onRoomInfoUpdate(RCVoiceRoomInfo room) {
         this.roomInfo = room;
@@ -105,6 +174,11 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
         if (null != roomInforObserver) roomInforObserver.onRoomInfo(roomInfo);
     }
 
+    /**
+     * 麦位列表跟新回调
+     *
+     * @param list
+     */
     @Override
     public void onSeatInfoUpdate(List<RCVoiceSeatInfo> list) {
         int count = list.size();
@@ -113,31 +187,42 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
             RCVoiceSeatInfo info = list.get(i);
             Log.d(TAG, "index = " + i + "  " + GsonUtil.obj2Json(info));
         }
-        mSeatInfos.clear();
-        mSeatInfos.addAll(list);
+        synchronized (obj) {
+            mSeatInfos.clear();
+            mSeatInfos.addAll(list);
+        }
         if (null != seatListObserver) seatListObserver.onSeatList(list);
     }
 
+    //同步回调 onSeatInfoUpdate 此处无特殊需求可不处理
     @Override
     public void onUserEnterSeat(int index, String userId) {
         Log.d(TAG, "onUserEnterSeat: index = " + index + " userId = " + userId);
     }
 
+    //同步回调 onSeatInfoUpdate 此处无特殊需求可不处理
     @Override
     public void onUserLeaveSeat(int index, String userId) {
         Log.d(TAG, "onUserLeaveSeat: index = " + index + " userId = " + userId);
     }
 
+    //同步回调 onSeatInfoUpdate 此处无特殊需求可不处理
     @Override
     public void onSeatMute(int index, boolean mute) {
         Log.d(TAG, "onSeatMute: index = " + index + " mute = " + mute);
     }
 
+    //同步回调 onSeatInfoUpdate 此处无特殊需求可不处理
     @Override
     public void onSeatLock(int index, boolean locked) {
         Log.d(TAG, "onSeatLock: index = " + index + " locked = " + locked);
     }
 
+    /**
+     * 观众进入
+     *
+     * @param userId
+     */
     @Override
     public void onAudienceEnter(String userId) {
         Log.d(TAG, "onAudienceEnter: userId = " + userId);
@@ -147,6 +232,11 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
         }
     }
 
+    /**
+     * 观众离开房间
+     *
+     * @param userId
+     */
     @Override
     public void onAudienceExit(String userId) {
         Log.d(TAG, "onAudienceExit: userId = " + userId);
@@ -154,6 +244,12 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
         if (null != mAudienceIds) mAudienceIds.remove(userId);
     }
 
+    /**
+     * 说话状态回调 比较频繁
+     *
+     * @param index    麦位索引
+     * @param speaking 是否正在语音
+     */
     @Override
     public void onSpeakingStateChanged(int index, boolean speaking) {
 //        Log.d(TAG, "onSpeakingStateChanged: index = " + index + " speaking = " + speaking);
@@ -172,43 +268,34 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
      */
     @Override
     public void onRoomNotificationReceived(String name, String content) {
-//        Log.d(TAG, "onRoomNotificationReceived: name = " + name + " content = " + content);
+        Log.v(TAG, "onRoomNotificationReceived: name = " + name + " content = " + content);
     }
 
     /**
-     * 被抱上麦回调
+     * 当前用户被抱上麦回调
      *
-     * @param userId 邀请人的id
+     * @param userId 发起邀请的用户id
      */
     @Override
     public void onPickSeatReceivedFrom(String userId) {
         Log.d(TAG, "onPickSeatReceivedFrom: userId = " + userId);
         if (null != activity && null != activity.get()) {
             String name = AccoutManager.getAccoutName(userId);
-            ApiFunDialogHelper.helper().showTipDialog(activity.get(), "邀请提示", "'" + name + "'邀请您上麦，是否接收", new Api.IResultBack<Boolean>() {
+            ApiFunDialogHelper.helper().showTipDialog(activity.get(), "邀请", "'" + name + "'邀请您上麦，是否接收", new IResultBack<Boolean>() {
                 @Override
                 public void onResult(Boolean result) {
                     if (result) {
                         //同意
-                        RCVoiceRoomEngine.getInstance()
-                                .notifyVoiceRoom(Api.EVENT_AGREE_PICK, AccoutManager.getCurrentId());
+                        RCVoiceRoomEngine.getInstance().notifyVoiceRoom(Api.EVENT_AGREE_PICK, AccoutManager.getCurrentId());
                         //获取可用麦位索引
-                        int availableIndex = -1;
-                        for (int i = 0; i < mSeatInfos.size(); i++) {
-                            RCVoiceSeatInfo seat = mSeatInfos.get(i);
-                            if (RCVoiceSeatInfo.RCSeatStatus.RCSeatStatusEmpty == seat.getStatus()) {
-                                availableIndex = i;
-                                break;
-                            }
-                        }
+                        int availableIndex = getAvailableSeatIndex();
                         if (availableIndex > -1) {
                             VoiceRoomApi.getApi().enterSeat(availableIndex, null);
                         } else {
                             KToast.showToast("当前没有空余的麦位");
                         }
                     } else {//拒绝
-                        RCVoiceRoomEngine.getInstance()
-                                .notifyVoiceRoom(Api.EVENT_REJECT_PICK, AccoutManager.getCurrentId());
+                        RCVoiceRoomEngine.getInstance().notifyVoiceRoom(Api.EVENT_REJECT_PICK, AccoutManager.getCurrentId());
                     }
 
                 }
@@ -227,11 +314,20 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
     }
 
     /**
-     * 房主或管理员 接受同意 用户的排麦申请
+     * 房主或管理员同意当前用户的排麦申请的回调
+     * 1. enterSeat
      */
     @Override
     public void onRequestSeatAccepted() {
-
+        Log.d(TAG, "onRequestSeatAccepted: ");
+        RCVoiceRoomEngine.getInstance().notifyVoiceRoom(Api.EVENT_AGREE_PICK, AccoutManager.getCurrentId());
+        //获取可用麦位索引
+        int availableIndex = getAvailableSeatIndex();
+        if (availableIndex > -1) {
+            VoiceRoomApi.getApi().enterSeat(availableIndex, null);
+        } else {
+            KToast.showToast("当前没有空余的麦位");
+        }
     }
 
     /**
@@ -239,19 +335,63 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
      */
     @Override
     public void onRequestSeatRejected() {
-
+        Log.d(TAG, "onRequestSeatRejected: ");
+        KToast.showToast("您的上麦申请被拒绝啦");
     }
 
     /**
      * 排麦列表发生变化
+     * 1、获取申请排麦id列表
+     * 2、过滤已经在房间的用户
+     * 3、弹框提 同意、拒绝
      */
     @Override
     public void onRequestSeatListChanged() {
+        Log.d(TAG, "onRequestSeatListChanged: ");
+        RCVoiceRoomEngine.getInstance().getRequestSeatUserIds(new RCVoiceRoomResultCallback<List<String>>() {
+            @Override
+            public void onSuccess(List<String> strings) {
+                Log.e(TAG, "getRequestSeatUserIds: ids = " + GsonUtil.obj2Json(strings));
+                List<String> requestIds = new ArrayList<>();
+                for (String id : strings) {
+                    if (null == getSeatInfo(id)) {//过滤 不再麦位上
+                        requestIds.add(id);
+                    }
+                }
+                if (!requestIds.isEmpty()) {
+                    String userId = requestIds.get(0);
+                    String name = AccoutManager.getAccoutName(userId);
+                    ApiFunDialogHelper.helper().showTipDialog(activity.get(), "申请上麦", "'" + name + "'申请上麦 是否同意？", new IResultBack<Boolean>() {
+                        @Override
+                        public void onResult(Boolean result) {
+                            if (result) {
+                                //同意
+                                int index = getAvailableSeatIndex();
+                                if (index > -1) {
+                                    RCVoiceRoomEngine.getInstance().acceptRequestSeat(userId, null);
+                                } else {
+                                    KToast.showToast("当前没有空余的麦位");
+                                }
+                            } else {//拒绝
+                                RCVoiceRoomEngine.getInstance().rejectRequestSeat(userId, null);
+                            }
+                        }
+                    });
+                } else {//申请被取消
+                    ApiFunDialogHelper.helper().dismissDialog();
+                }
+            }
+
+            @Override
+            public void onError(int i, String s) {
+                Log.e(TAG, "onError: code:" + i + " ,message = " + s);
+            }
+        });
 
     }
 
     /**
-     * 收到上麦邀请
+     * 收到邀请
      *
      * @param invitationId 邀请标识 Id
      * @param userId       发送邀请用户的标识
@@ -259,17 +399,17 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
      */
     @Override
     public void onInvitationReceived(String invitationId, String userId, String content) {
-
+        Log.d(TAG, "onInvitationReceived: invitationId = " + invitationId + " userId = " + userId + " content = " + content);
     }
 
     /**
-     * 邀请被接受通知
+     * 邀请被接受回调
      *
      * @param invitationId 邀请标识 Id
      */
     @Override
     public void onInvitationAccepted(String invitationId) {
-
+        Log.d(TAG, "onInvitationAccepted: invitationId = " + invitationId);
     }
 
     /**
@@ -279,7 +419,7 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
      */
     @Override
     public void onInvitationRejected(String invitationId) {
-
+        Log.d(TAG, "onInvitationRejected: invitationId = " + invitationId);
     }
 
     /**
@@ -289,7 +429,7 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
      */
     @Override
     public void onInvitationCancelled(String invitationId) {
-
+        Log.d(TAG, "onInvitationCancelled: invitationId = " + invitationId);
     }
 
     /**

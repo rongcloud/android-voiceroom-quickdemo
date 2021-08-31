@@ -18,8 +18,8 @@ import com.bcq.adapter.recycle.RcySAdapter;
 
 import java.util.List;
 
-import cn.rongcloud.quickdemo.uitls.Api;
-import cn.rongcloud.quickdemo.uitls.KToast;
+import cn.rongcloud.quickdemo.interfaces.Api;
+import cn.rongcloud.quickdemo.interfaces.IResultBack;
 import cn.rongcloud.quickdemo.uitls.VoiceRoomApi;
 import cn.rongcloud.quickdemo.widget.ApiFunDialogHelper;
 import cn.rongcloud.voiceroom.api.RCVoiceRoomEngine;
@@ -28,12 +28,16 @@ import cn.rongcloud.voiceroom.model.RCVoiceSeatInfo;
 
 /**
  * 演示房间api和麦位api的activity基类
- * 1.创建并加入房间
- * 2.上麦 麦位index = 0
+ * 1.设置房间事件监听
+ * 2.创建或者加入房间
+ * 3.房主上麦 seatIndex = 0
  */
 public abstract class BaseApiActivity extends AppCompatActivity implements View.OnClickListener, ApiFunDialogHelper.OnApiClickListener
         , QuickEventListener.SeatListObserver, QuickEventListener.RoomInforObserver {
     protected final String TAG = this.getClass().getSimpleName();
+    protected final static String LEFT_ROOM = "Leave Room";
+    //便于测试 统一房间Id
+    protected final static String TEST_ROOM_ID = "10010RC";
     private RecyclerView rl_seat;
     protected TextView create_and_join, add_event_listeren, room_mode;
     protected SeatHandleBinder createrBinder;
@@ -147,7 +151,6 @@ public abstract class BaseApiActivity extends AppCompatActivity implements View.
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Log.e(TAG, "item.getTitle = " + item.getTitle());
         switch (item.getItemId()) {
             case R.id.room_api:
                 ApiFunDialogHelper.helper().showRoomApiDialog(this, this);
@@ -159,13 +162,15 @@ public abstract class BaseApiActivity extends AppCompatActivity implements View.
 
     @Override
     public void onApiClick(View v, ApiFun action) {
-        KToast.showToast(action.name());
         if (action.equals(ApiFun.invite_seat)) {
-            ApiFunDialogHelper.helper().showSelectDialog(this, "观众列表", new Api.IResultBack<String>() {
+            //和业务相关
+            // 基于QuickDemo 目前在展示的观众列表是：房主进房间之后进入房间的观众
+            // 房主进房间的观众列表需要依赖服务端
+            ApiFunDialogHelper.helper().showSelectDialog(this, "观众列表", new IResultBack<String>() {
                 @Override
                 public void onResult(String result) {
                     String userId = result;
-                    VoiceRoomApi.getApi().handleRoomApi( action, userId);
+                    VoiceRoomApi.getApi().handleRoomApi(action, userId);
                 }
             });
 
@@ -175,7 +180,7 @@ public abstract class BaseApiActivity extends AppCompatActivity implements View.
     }
 
     /**
-     * 是否是创建
+     * 处理加入房间 或 创建并加入房价
      *
      * @return
      */
@@ -183,6 +188,8 @@ public abstract class BaseApiActivity extends AppCompatActivity implements View.
 
     /**
      * ActionBar是否显示Room相关api的action
+     * 房主：显示房间api的action
+     * 其他（观众，麦位主播） 不显示
      *
      * @return
      */

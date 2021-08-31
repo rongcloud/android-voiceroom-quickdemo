@@ -10,6 +10,7 @@ public enum ApiFun {
     seat_request("请求上麦"),
     seat_request_cancel("取消上麦请求"),
     seat_extra("扩展属性"),
+    seat_pick_out("抱下麦"),
 
     room_all_mute("全麦静麦"),
     room_all_mute_un("取消全麦静音"),

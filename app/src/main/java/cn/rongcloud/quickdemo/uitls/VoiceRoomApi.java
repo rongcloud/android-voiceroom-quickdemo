@@ -4,6 +4,8 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import cn.rongcloud.quickdemo.ApiFun;
+import cn.rongcloud.quickdemo.interfaces.Api;
+import cn.rongcloud.quickdemo.interfaces.IResultBack;
 import cn.rongcloud.voiceroom.api.RCVoiceRoomEngine;
 import cn.rongcloud.voiceroom.api.callback.RCVoiceRoomCallback;
 import cn.rongcloud.voiceroom.model.RCVoiceRoomInfo;
@@ -26,7 +28,7 @@ public class VoiceRoomApi implements Api {
      * @param apiFun
      */
     @Override
-    public void handleRoomApi(ApiFun apiFun, Object extra) {
+    public void handleRoomApi(ApiFun apiFun, String userId) {
         switch (apiFun) {
             case room_all_lock://全麦锁定
                 lockAll(true);
@@ -59,8 +61,8 @@ public class VoiceRoomApi implements Api {
                 updateSeatCount(count, null);
                 break;
             case invite_seat://邀请上麦
-                if (null != extra && extra instanceof String) {
-                    invitedEnterSeat(extra.toString(), null);
+                if (!TextUtils.isEmpty(userId)) {
+                    invitedEnterSeat(userId, null);
                 }
                 break;
             case room_free://自由模式
@@ -78,7 +80,7 @@ public class VoiceRoomApi implements Api {
      * 处理麦位api调用
      */
     @Override
-    public void handleSeatApi(ApiFun apiFun, int seatIndex) {
+    public void handleSeatApi(ApiFun apiFun, int seatIndex, String userId) {
         switch (apiFun) {
             case seat_mute://麦位静音
                 muteSeat(seatIndex, true, null);
@@ -106,6 +108,10 @@ public class VoiceRoomApi implements Api {
                 break;
             case seat_extra://扩展属性
                 updateSeatExtra(seatIndex, "附加" + seatIndex, null);
+                break;
+            case seat_pick_out://抱下麦
+                RCVoiceRoomEngine.getInstance().kickUserFromSeat(
+                        userId, new DefauRoomCallback("invitedIntoSeat", "抱下麦", null));
                 break;
         }
     }
@@ -211,7 +217,7 @@ public class VoiceRoomApi implements Api {
     @Override
     public void muteSeat(int index, boolean mute, IResultBack<Boolean> resultBack) {
         String action = mute ? "麦位静音" : "取消麦位静音";
-        RCVoiceRoomEngine.getInstance().lockSeat(index, mute,
+        RCVoiceRoomEngine.getInstance().muteSeat(index, mute,
                 new DefauRoomCallback("muteSeat", action, resultBack));
     }
 

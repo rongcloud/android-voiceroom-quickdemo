@@ -12,6 +12,10 @@ public class AccoutManager {
     private final static List<Accout> accounts = new ArrayList<>(4);
 
     static {
+        // TODO: 2021/8/31  must add account
+        //  Accout accout = new Accout("Your UserId", "Your UserName");
+        //  accout.token = "Your Token ";//token 需和userId一一对应
+        //  accounts.add(accout);
         Accout accout = new Accout("92814153-3330-48dd-9627-6eb190c3e101", "测试1");
         accout.token = "r3CkHmcqe/7SOuRelcAA6T0EGJbKyhhJd4lM5R1sjd4dqebDKYJHlNs5peb8z1U4vlcCu5XJ7aNNTV5nptNBkQ==@4d1h.cn.rongnav.com;4d1h.cn.rongcfg.com";
         accounts.add(accout);
@@ -35,19 +39,6 @@ public class AccoutManager {
 
     public static void setCurrent(String currentId) {
         AccoutManager.currentId = currentId;
-    }
-
-    public static List<Accout> getOtherAccounts() {
-        List<Accout> others = new ArrayList<>();
-        if (TextUtils.isEmpty(currentId)) {
-            return accounts;
-        }
-        for (Accout accout : accounts) {
-            if (!currentId.equals(accout.userId)) {
-                others.add(accout);
-            }
-        }
-        return others;
     }
 
     @Nullable

@@ -2,7 +2,8 @@ package cn.rongcloud.quickdemo;
 
 import android.view.View;
 
-import cn.rongcloud.quickdemo.uitls.Api;
+import cn.rongcloud.quickdemo.interfaces.Api;
+import cn.rongcloud.quickdemo.interfaces.IResultBack;
 import cn.rongcloud.quickdemo.uitls.VoiceRoomApi;
 import cn.rongcloud.quickdemo.widget.ApiFunDialogHelper;
 import cn.rongcloud.voiceroom.model.RCVoiceRoomInfo;
@@ -16,7 +17,6 @@ public class CreaterActivity extends BaseApiActivity implements View.OnClickList
 
     private final static int DEF_SEAT_COUNT = 5;
     private final static String CREAT = "Create And Join";
-    private final static String CLOSE = "Close";
 
     @Override
     protected void initCustomer() {
@@ -32,7 +32,7 @@ public class CreaterActivity extends BaseApiActivity implements View.OnClickList
     void handleJoinOrCreateAndJoin() {
         if (CREAT.equals(create_and_join.getText().toString().trim())) {
 //            String roomId = "" + System.currentTimeMillis();
-            String roomId = "10010R";
+            String roomId = TEST_ROOM_ID;
             String roomName = "Room_" + roomId;
             RCVoiceRoomInfo roomInfo = VoiceRoomApi.getApi().getRoomInfo();
             roomInfo.setRoomName(roomName);
@@ -40,15 +40,15 @@ public class CreaterActivity extends BaseApiActivity implements View.OnClickList
             roomInfo.setFreeEnterSeat(false);
             roomInfo.setLockAll(false);
             roomInfo.setMuteAll(false);
-            VoiceRoomApi.getApi().createAndJoin(roomId, roomInfo, new Api.IResultBack<Boolean>() {
+            VoiceRoomApi.getApi().createAndJoin(roomId, roomInfo, new IResultBack<Boolean>() {
                 @Override
                 public void onResult(Boolean result) {
                     setTitle(roomName);
-                    if (result) create_and_join.setText(CLOSE);
+                    if (result) create_and_join.setText(LEFT_ROOM);
                 }
             });
         } else {
-            VoiceRoomApi.getApi().leaveRoom(new Api.IResultBack<Boolean>() {
+            VoiceRoomApi.getApi().leaveRoom(new IResultBack<Boolean>() {
                 @Override
                 public void onResult(Boolean result) {
                     if (result) create_and_join.setText(CREAT);

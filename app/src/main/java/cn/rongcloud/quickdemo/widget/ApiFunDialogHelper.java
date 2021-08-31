@@ -3,6 +3,7 @@ package cn.rongcloud.quickdemo.widget;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -22,8 +23,9 @@ import java.util.List;
 import cn.rongcloud.quickdemo.ApiFun;
 import cn.rongcloud.quickdemo.QuickEventListener;
 import cn.rongcloud.quickdemo.R;
+import cn.rongcloud.quickdemo.interfaces.IResultBack;
 import cn.rongcloud.quickdemo.uitls.AccoutManager;
-import cn.rongcloud.quickdemo.uitls.Api;
+import cn.rongcloud.quickdemo.interfaces.Api;
 
 public class ApiFunDialogHelper {
     private final static ApiFunDialogHelper seatApi = new ApiFunDialogHelper();
@@ -37,6 +39,7 @@ public class ApiFunDialogHelper {
             ApiFun.seat_request,
             ApiFun.seat_request_cancel,
             ApiFun.seat_extra,
+            ApiFun.seat_pick_out,
 
     };
     public final static ApiFun[] ROOM_API = new ApiFun[]{
@@ -111,7 +114,7 @@ public class ApiFunDialogHelper {
         return refresh;
     }
 
-    private void dismissDialog() {
+    public void dismissDialog() {
         if (null != dialog) {
             dialog.dismiss();
         }
@@ -124,7 +127,7 @@ public class ApiFunDialogHelper {
      * @param activity
      * @param title    标题
      */
-    public void showEditorDialog(Activity activity, String title, Api.IResultBack<String> resultBack) {
+    public void showEditorDialog(Activity activity, String title, IResultBack<String> resultBack) {
         if (null == dialog || !dialog.enable()) {
             dialog = new QDialog(activity,
                     new DialogInterface.OnDismissListener() {
@@ -159,7 +162,7 @@ public class ApiFunDialogHelper {
      * @param title
      * @param resultBack
      */
-    public void showSelectDialog(Activity activity, String title, Api.IResultBack<String> resultBack) {
+    public void showSelectDialog(Activity activity, String title, IResultBack<String> resultBack) {
         if (null == dialog || !dialog.enable()) {
             dialog = new QDialog(activity,
                     new DialogInterface.OnDismissListener() {
@@ -209,7 +212,7 @@ public class ApiFunDialogHelper {
         dialog.show();
     }
 
-    public void showTipDialog(Activity activity, String title, String message, Api.IResultBack<Boolean> resultBack) {
+    public void showTipDialog(Activity activity, String title, String message, IResultBack<Boolean> resultBack) {
         if (null == dialog || !dialog.enable()) {
             dialog = new QDialog(activity,
                     new DialogInterface.OnDismissListener() {
@@ -221,6 +224,8 @@ public class ApiFunDialogHelper {
         }
         TextView textView = new TextView(dialog.getContext());
         textView.setText(message);
+        textView.setTextSize(18);
+        textView.setTextColor(Color.parseColor("#343434"));
         dialog.replaceContent(title,
                 "拒绝",
                 new View.OnClickListener() {
