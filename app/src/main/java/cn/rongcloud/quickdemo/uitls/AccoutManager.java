@@ -10,7 +10,7 @@ public class AccoutManager {
     private final static List<Accout> accounts = new ArrayList<>(4);
 
     static {
-        // TODO: 2021/8/31  must add account
+        // TODO: 第二步  must add account
         //  Accout accout = new Accout("Your UserId", "Your UserName");
         //  accout.token = "Your Token ";//token 需和userId一一对应
         //  accounts.add(accout);

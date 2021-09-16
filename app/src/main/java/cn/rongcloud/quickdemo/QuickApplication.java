@@ -8,7 +8,8 @@ import cn.rongcloud.voiceroom.api.RCVoiceRoomEngine;
 
 public class QuickApplication extends Application {
     private final static String TAG = "QuickApplication";
-    private final static String APP_KEY = "pvxdm17jpw7ar";
+    // todo 第一步 替换你自己的APP KEY
+    private final static String APP_KEY = "";
 
     @Override
     public void onCreate() {
