@@ -1,6 +1,5 @@
 package cn.rongcloud.quickdemo;
 
-import android.app.Application;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -18,15 +17,23 @@ import cn.rongcloud.quickdemo.uitls.KToast;
 import cn.rongcloud.quickdemo.uitls.UIKit;
 import cn.rongcloud.voiceroom.api.RCVoiceRoomEngine;
 import cn.rongcloud.voiceroom.api.callback.RCVoiceRoomCallback;
-import io.rong.imlib.RongCoreClient;
-import io.rong.imlib.RongIMClient;
 
-public class ConnectActivity extends AppCompatActivity {
+public class ConnectActivity extends AbsPermissionActivity {
     private RecyclerView rl_accout;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    protected String[] onCheckPermission() {
+        return VOICE_PERMISSIONS;
+    }
+
+    @Override
+    protected void onPermissionAccept(boolean accept) {
+        if (accept) {
+            init();
+        }
+    }
+
+    private void init() {
         setContentView(R.layout.activity_connect);
         setTitle("选择账号");
         rl_accout = findViewById(R.id.rl_accout);
@@ -51,14 +58,14 @@ public class ConnectActivity extends AppCompatActivity {
         ((IAdapte) rl_accout.getAdapter()).setData(AccoutManager.getAccounts(), true);
     }
 
+
     private void connect(AccoutManager.Accout accout, boolean isCreater) {
         setTitle(accout.getName() + " 连接中...");
         //先断开连接
-        RCVoiceRoomEngine.getInstance().disConnect();
+        RCVoiceRoomEngine.getInstance().disconnect();
         AccoutManager.setCurrent(accout.getUserId());
         //连接
-        RCVoiceRoomEngine.getInstance().connectWithToken(
-                (Application) UIKit.getContext(), accout.getToken(), new RCVoiceRoomCallback() {
+        RCVoiceRoomEngine.getInstance().connectWithToken(accout.getToken(), new RCVoiceRoomCallback() {
                     @Override
                     public void onSuccess() {
                         KToast.showToast("connect success");

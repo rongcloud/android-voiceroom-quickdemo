@@ -285,7 +285,7 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
                 public void onResult(Boolean result) {
                     if (result) {
                         //同意
-                        RCVoiceRoomEngine.getInstance().notifyVoiceRoom(Api.EVENT_AGREE_PICK, AccoutManager.getCurrentId());
+                        RCVoiceRoomEngine.getInstance().notifyVoiceRoom(Api.EVENT_AGREE_PICK, AccoutManager.getCurrentId(), null);
                         //获取可用麦位索引
                         int availableIndex = getAvailableSeatIndex();
                         if (availableIndex > -1) {
@@ -294,7 +294,7 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
                             KToast.showToast("当前没有空余的麦位");
                         }
                     } else {//拒绝
-                        RCVoiceRoomEngine.getInstance().notifyVoiceRoom(Api.EVENT_REJECT_PICK, AccoutManager.getCurrentId());
+                        RCVoiceRoomEngine.getInstance().notifyVoiceRoom(Api.EVENT_REJECT_PICK, AccoutManager.getCurrentId(), null);
                     }
 
                 }
@@ -319,7 +319,7 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
     @Override
     public void onRequestSeatAccepted() {
         Log.d(TAG, "onRequestSeatAccepted: ");
-        RCVoiceRoomEngine.getInstance().notifyVoiceRoom(Api.EVENT_AGREE_PICK, AccoutManager.getCurrentId());
+        RCVoiceRoomEngine.getInstance().notifyVoiceRoom(Api.EVENT_AGREE_PICK, AccoutManager.getCurrentId(), null);
         //获取可用麦位索引
         int availableIndex = getAvailableSeatIndex();
         if (availableIndex > -1) {

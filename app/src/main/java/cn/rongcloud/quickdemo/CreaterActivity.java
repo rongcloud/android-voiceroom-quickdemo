@@ -1,5 +1,6 @@
 package cn.rongcloud.quickdemo;
 
+import android.text.TextUtils;
 import android.view.View;
 
 import cn.rongcloud.quickdemo.interfaces.IResultBack;
@@ -29,20 +30,10 @@ public class CreaterActivity extends BaseApiActivity implements View.OnClickList
     @Override
     void handleJoinOrCreateAndJoin() {
         if (CREAT.equals(create_and_join.getText().toString().trim())) {
-//            String roomId = "" + System.currentTimeMillis();
-            String roomId = TEST_ROOM_ID;
-            String roomName = "Room_" + roomId;
-            RCVoiceRoomInfo roomInfo = VoiceRoomApi.getApi().getRoomInfo();
-            roomInfo.setRoomName(roomName);
-            roomInfo.setSeatCount(DEF_SEAT_COUNT);
-            roomInfo.setFreeEnterSeat(false);
-            roomInfo.setLockAll(false);
-            roomInfo.setMuteAll(false);
-            VoiceRoomApi.getApi().createAndJoin(roomId, roomInfo, new IResultBack<Boolean>() {
+            ApiFunDialogHelper.helper().showEditorDialog(this, "新建房间ID", new IResultBack<String>() {
                 @Override
-                public void onResult(Boolean result) {
-                    setTitle(roomName);
-                    if (result) create_and_join.setText(LEFT_ROOM);
+                public void onResult(String result) {
+                    createRoom(result);
                 }
             });
         } else {
@@ -51,8 +42,29 @@ public class CreaterActivity extends BaseApiActivity implements View.OnClickList
                 public void onResult(Boolean result) {
                     if (result) create_and_join.setText(CREAT);
                     resetAnable();
+                    finish();
                 }
             });
         }
+    }
+
+    private void createRoom(String roomId) {
+        if (TextUtils.isEmpty(roomId)) {
+            roomId = TEST_ROOM_ID;
+        }
+        String roomName = "Room_" + roomId;
+        RCVoiceRoomInfo roomInfo = VoiceRoomApi.getApi().getRoomInfo();
+        roomInfo.setRoomName(roomName);
+        roomInfo.setSeatCount(DEF_SEAT_COUNT);
+        roomInfo.setFreeEnterSeat(false);
+        roomInfo.setLockAll(false);
+        roomInfo.setMuteAll(false);
+        VoiceRoomApi.getApi().createAndJoin(roomId, roomInfo, new IResultBack<Boolean>() {
+            @Override
+            public void onResult(Boolean result) {
+                setTitle(roomName);
+                if (result) create_and_join.setText(LEFT_ROOM);
+            }
+        });
     }
 }

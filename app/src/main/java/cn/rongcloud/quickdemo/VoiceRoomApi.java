@@ -142,7 +142,8 @@ public class VoiceRoomApi implements Api {
             public void onSuccess() {
                 KToast.showToastWithLag(TAG, "crateAndJoin#onSuccess");
                 //房主上麦 index = 0
-                VoiceRoomApi.getApi().enterSeat(0, resultBack);
+//                VoiceRoomApi.getApi().enterSeat(0, resultBack);
+                if (null != resultBack) resultBack.onResult(true);
             }
 
             @Override
@@ -196,8 +197,9 @@ public class VoiceRoomApi implements Api {
 
     @Override
     public void lockAll(boolean locked) {
-        RCVoiceRoomEngine.getInstance().lockOtherSeats(locked);
-        KToast.showToastWithLag(TAG, locked ? "全麦锁定成功" : "全麦解锁成功");
+        String action = locked ? "全麦锁定成功" : "全麦解锁成功";
+        RCVoiceRoomEngine.getInstance().lockOtherSeats(locked,
+                new DefauRoomCallback("muteSeat", action, null));
     }
 
     @Override
@@ -210,8 +212,9 @@ public class VoiceRoomApi implements Api {
 
     @Override
     public void muteAll(boolean mute) {
-        RCVoiceRoomEngine.getInstance().muteOtherSeats(mute);
-        KToast.showToastWithLag(TAG, mute ? "全麦静音成功" : "全麦取消静音成功");
+        String action = mute ? "全麦静音成功" : "全麦取消静音成功";
+        RCVoiceRoomEngine.getInstance().muteOtherSeats(mute,
+                new DefauRoomCallback("muteSeat", action, null));
     }
 
     @Override

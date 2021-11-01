@@ -142,7 +142,7 @@ public class ApiFunDialogHelper {
         dialog.replaceContent(title,
                 "",
                 null,
-                "加入",
+                "新建/加入",
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

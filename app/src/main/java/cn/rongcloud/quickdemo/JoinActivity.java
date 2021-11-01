@@ -1,5 +1,6 @@
 package cn.rongcloud.quickdemo;
 
+import android.text.TextUtils;
 import android.view.View;
 
 import cn.rongcloud.quickdemo.interfaces.IResultBack;
@@ -27,13 +28,10 @@ public class JoinActivity extends BaseApiActivity implements View.OnClickListene
     @Override
     void handleJoinOrCreateAndJoin() {
         if (JOIN.equals(create_and_join.getText().toString().trim())) {
-            ApiFunDialogHelper.helper().showEditorDialog(this, "房间ID", new IResultBack<String>() {
+            ApiFunDialogHelper.helper().showEditorDialog(this, "加入房间ID", new IResultBack<String>() {
                 @Override
                 public void onResult(String result) {
-//                    if (!TextUtils.isEmpty(result)){
-//                        join(result);
-//                    }
-                    join(TEST_ROOM_ID);
+                    join(result);
                 }
             });
         } else {
@@ -42,12 +40,17 @@ public class JoinActivity extends BaseApiActivity implements View.OnClickListene
                 public void onResult(Boolean result) {
                     if (result) create_and_join.setText(JOIN);
                     resetAnable();
+                    finish();
                 }
             });
         }
     }
 
     private void join(String roomId) {
+        if (TextUtils.isEmpty(roomId)) {
+            roomId = TEST_ROOM_ID;
+        }
+
         VoiceRoomApi.getApi().joinRoom(roomId, new IResultBack<Boolean>() {
             @Override
             public void onResult(Boolean result) {
