@@ -3,20 +3,25 @@ package cn.rongcloud.quickdemo;
 import android.app.Activity;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.rongcloud.quickdemo.interfaces.Api;
 import cn.rongcloud.quickdemo.interfaces.IResultBack;
 import cn.rongcloud.quickdemo.uitls.AccoutManager;
-import cn.rongcloud.quickdemo.interfaces.Api;
 import cn.rongcloud.quickdemo.uitls.GsonUtil;
 import cn.rongcloud.quickdemo.uitls.KToast;
 import cn.rongcloud.quickdemo.widget.ApiFunDialogHelper;
 import cn.rongcloud.voiceroom.api.IRCVoiceRoomEngine;
 import cn.rongcloud.voiceroom.api.RCVoiceRoomEngine;
+import cn.rongcloud.voiceroom.api.callback.RCVoiceRoomCallback;
 import cn.rongcloud.voiceroom.api.callback.RCVoiceRoomEventListener;
 import cn.rongcloud.voiceroom.api.callback.RCVoiceRoomResultCallback;
+import cn.rongcloud.voiceroom.model.PKResponse;
+import cn.rongcloud.voiceroom.model.RCPKInfo;
 import cn.rongcloud.voiceroom.model.RCVoiceRoomInfo;
 import cn.rongcloud.voiceroom.model.RCVoiceSeatInfo;
 import io.rong.imlib.RongIMClient;
@@ -36,10 +41,19 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
         void onSeat(int index, RCVoiceSeatInfo info);
     }
 
+
+    public interface PKObserver {
+        void onPK(PKType type);
+    }
+
+    public enum PKType{
+        nomal,pk
+    }
     private final static Object obj = new Object();
     private SeatListObserver seatListObserver;
     private RoomInforObserver roomInforObserver;
     private SeatObserver seatObserver;
+    private PKObserver pkObserver;
     private static String TAG = "QuickEventListener";
     private static QuickEventListener listener = new QuickEventListener();
     //设置监听标识
@@ -106,6 +120,10 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
      */
     public void observeRoomInfo(RoomInforObserver observer) {
         this.roomInforObserver = observer;
+    }
+
+    public void observePKState(PKObserver observer) {
+        this.pkObserver = observer;
     }
 
     /**
@@ -440,5 +458,68 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
     @Override
     public void onUserReceiveKickOutRoom(String targetId, String userId) {
         Log.d(TAG, "onUserReceiveKickOutRoom: targetId = " + targetId);
+    }
+
+    @Override
+    public void onNetworkStatus(int delayMs) {
+//        Log.d(TAG, "onNetworkStatus: delayMs = " + delayMs);
+    }
+
+    @Override
+    public void onPKGoing(@NonNull RCPKInfo rcpkInfo) {
+        Log.d(TAG, "onPKgoing: rcpkInfo = " + rcpkInfo.toJson());
+        KToast.showToast("PK开始");
+        if (null != pkObserver)pkObserver.onPK(PKType.pk);
+    }
+
+    @Override
+    public void onPKFinish() {
+        Log.d(TAG, "onPKFinish: onPKFinish");
+        KToast.showToast("PK结束");
+        if (null != pkObserver)pkObserver.onPK(PKType.nomal);
+    }
+
+    @Override
+    public void onReveivePKInvitation(String inviterRoomId, String inviterUserId) {
+        Log.d(TAG, "onReveivePKInvitation: inviterRoomId = " + inviterRoomId + " inviterUserId = " + inviterUserId);
+        String name = AccoutManager.getAccoutName(inviterUserId);
+        ApiFunDialogHelper.helper().showTipDialog(activity.get(), "PK邀请", "'" + name + "'向您发起PK申请，是否同意？", new IResultBack<Boolean>() {
+            @Override
+            public void onResult(Boolean result) {
+                RCVoiceRoomEngine.getInstance().responsePKInvitation(inviterRoomId, inviterUserId, result ? PKResponse.accept : PKResponse.ignore, new RCVoiceRoomCallback() {
+                    @Override
+                    public void onSuccess() {
+                        KToast.showToastWithLag(TAG, result ? "同意PK成功" : "拒绝PK成功");
+                    }
+
+                    @Override
+                    public void onError(int code, String message) {
+                        KToast.showToastWithLag(TAG, (result ? "同意PK失败" : "拒绝PK失败") + " code = " + code + " message = " + message);
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
+    public void onPKInvitationCanceled(String inviterRoomId, String inviterUserId) {
+        Log.d(TAG, "onPKInvitationCanceled: inviterRoomId = " + inviterRoomId + " inviterUserId = " + inviterUserId);
+        ApiFunDialogHelper.helper().dismissDialog();
+        KToast.showToast("PK邀请已取消");
+        if (null != pkObserver)pkObserver.onPK(PKType.nomal);
+    }
+
+    @Override
+    public void onPKInvitationRejected(String inviterRoomId, String inviterUserId) {
+        Log.d(TAG, "onPKInvitationRejected: inviterRoomId = " + inviterRoomId + " inviterUserId = " + inviterUserId);
+        KToast.showToast("您的PK邀请被拒绝");
+        if (null != pkObserver)pkObserver.onPK(PKType.nomal);
+    }
+
+    @Override
+    public void onPKInvitationIgnored(String inviteeRoomId, String inviteeUserId) {
+        Log.d(TAG, "onPKInvitationRejected: inviterRoomId = " + inviteeRoomId + " inviterUserId = " + inviteeUserId);
+        KToast.showToast("您的PK邀请被忽略");
+        if (null != pkObserver)pkObserver.onPK(PKType.nomal);
     }
 }

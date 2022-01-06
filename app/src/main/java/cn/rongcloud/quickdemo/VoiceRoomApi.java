@@ -1,11 +1,13 @@
 package cn.rongcloud.quickdemo;
 
+import android.media.MediaRecorder;
 import android.text.TextUtils;
 import android.util.Log;
 
 import cn.rongcloud.quickdemo.interfaces.Api;
 import cn.rongcloud.quickdemo.interfaces.IResultBack;
 import cn.rongcloud.quickdemo.uitls.KToast;
+import cn.rongcloud.rtc.api.RCRTCConfig;
 import cn.rongcloud.voiceroom.api.RCVoiceRoomEngine;
 import cn.rongcloud.voiceroom.api.callback.RCVoiceRoomCallback;
 import cn.rongcloud.voiceroom.model.RCVoiceRoomInfo;
@@ -13,7 +15,7 @@ import cn.rongcloud.voiceroom.model.RCVoiceRoomInfo;
 public class VoiceRoomApi implements Api {
     private final static String TAG = "VoiceRoomApi";
     private final static Api api = new VoiceRoomApi();
-    private final RCVoiceRoomInfo roomInfo = new RCVoiceRoomInfo();
+    private final static RCVoiceRoomInfo roomInfo = new RCVoiceRoomInfo();
 
     private VoiceRoomApi() {
     }
@@ -22,13 +24,15 @@ public class VoiceRoomApi implements Api {
         return api;
     }
 
+    boolean mutePkFlag = false;
+
     /**
      * 处理房间api调用
      *
      * @param apiFun
      */
     @Override
-    public void handleRoomApi(ApiFun apiFun, String userId) {
+    public void handleRoomApi(ApiFun apiFun, String userId, String roomId) {
         switch (apiFun) {
             case room_all_lock://全麦锁定
                 lockAll(true);
@@ -72,6 +76,68 @@ public class VoiceRoomApi implements Api {
             case room_free_un://申请模式
                 roomInfo.setFreeEnterSeat(false);
                 updateRoomInfo(roomInfo, null);
+                break;
+            case invite_pk://邀请PK
+                if (!TextUtils.isEmpty(userId) && !TextUtils.isEmpty(roomId)) {
+                    RCVoiceRoomEngine.getInstance().sendPKInvitation(roomId, userId, new RCVoiceRoomCallback() {
+                        @Override
+                        public void onSuccess() {
+                            KToast.showToast("邀请pk成功！");
+                        }
+
+                        @Override
+                        public void onError(int code, String message) {
+                            KToast.showToast("邀请pk失败：【" + code + "】 msg = " + message);
+                        }
+                    });
+                }
+                break;
+            case invite_pk_cancel://取消邀请PK
+                if (!TextUtils.isEmpty(userId) && !TextUtils.isEmpty(roomId)) {
+                    RCVoiceRoomEngine.getInstance().cancelPKInvitation(roomId, userId, new RCVoiceRoomCallback() {
+                        @Override
+                        public void onSuccess() {
+                            KToast.showToast("取消PK邀请成功！");
+                        }
+
+                        @Override
+                        public void onError(int code, String message) {
+                            KToast.showToast("取消PK邀请失败：【" + code + "】 msg = " + message);
+                        }
+                    });
+                }
+                break;
+            case invite_pk_mute://静音pk者
+                mutePkFlag = !mutePkFlag;
+                RCVoiceRoomEngine.getInstance().mutePKUser(mutePkFlag, new RCVoiceRoomCallback() {
+                    @Override
+                    public void onSuccess() {
+                        KToast.showToast(mutePkFlag ? "屏蔽音频成功！" : "取消屏蔽音频成功");
+                    }
+
+                    @Override
+                    public void onError(int code, String message) {
+                        if (mutePkFlag) {
+                            KToast.showToast("屏蔽音频失败：【" + code + "】 msg = " + message);
+                        } else {
+                            KToast.showToast("取消屏蔽音频成功：【" + code + "】 msg = " + message);
+                        }
+
+                    }
+                });
+                break;
+            case invite_quit_pk://退出pk
+                RCVoiceRoomEngine.getInstance().quitPK(new RCVoiceRoomCallback() {
+                    @Override
+                    public void onSuccess() {
+                        KToast.showToast("退出pk成功！");
+                    }
+
+                    @Override
+                    public void onError(int code, String message) {
+                        KToast.showToast("退出pk失败：【" + code + "】 msg = " + message);
+                    }
+                });
                 break;
         }
     }
@@ -137,13 +203,18 @@ public class VoiceRoomApi implements Api {
             if (null != resultBack) resultBack.onResult(false);
             return;
         }
-        RCVoiceRoomEngine.getInstance().createAndJoinRoom(roomId, roomInfo, new RCVoiceRoomCallback() {
+
+        RCRTCConfig config = RCRTCConfig
+                .Builder
+                .create()
+                .enableHardwareDecoder(true)
+                .enableHardwareEncoder(true)
+                .setAudioSource(MediaRecorder.AudioSource.MIC).build();
+        RCVoiceRoomEngine.getInstance().createAndJoinRoom(config, roomId, roomInfo, new RCVoiceRoomCallback() {
             @Override
             public void onSuccess() {
-                KToast.showToastWithLag(TAG, "crateAndJoin#onSuccess");
-                //房主上麦 index = 0
-//                VoiceRoomApi.getApi().enterSeat(0, resultBack);
                 if (null != resultBack) resultBack.onResult(true);
+                KToast.showToastWithLag(TAG, "crateAndJoin#onSuccess");
             }
 
             @Override
@@ -161,7 +232,10 @@ public class VoiceRoomApi implements Api {
             if (null != resultBack) resultBack.onResult(false);
             return;
         }
-        RCVoiceRoomEngine.getInstance().joinRoom(roomId, new RCVoiceRoomCallback() {
+        RCRTCConfig config = RCRTCConfig
+                .Builder
+                .create().build();
+        RCVoiceRoomEngine.getInstance().joinRoom(config, roomId, new RCVoiceRoomCallback() {
             @Override
             public void onSuccess() {
                 KToast.showToastWithLag(TAG, "joinRoom#onSuccess");
@@ -197,9 +271,8 @@ public class VoiceRoomApi implements Api {
 
     @Override
     public void lockAll(boolean locked) {
-        String action = locked ? "全麦锁定成功" : "全麦解锁成功";
-        RCVoiceRoomEngine.getInstance().lockOtherSeats(locked,
-                new DefauRoomCallback("muteSeat", action, null));
+        RCVoiceRoomEngine.getInstance().lockOtherSeats(locked, null);
+        KToast.showToastWithLag(TAG, locked ? "全麦锁定成功" : "全麦解锁成功");
     }
 
     @Override
@@ -212,9 +285,8 @@ public class VoiceRoomApi implements Api {
 
     @Override
     public void muteAll(boolean mute) {
-        String action = mute ? "全麦静音成功" : "全麦取消静音成功";
-        RCVoiceRoomEngine.getInstance().muteOtherSeats(mute,
-                new DefauRoomCallback("muteSeat", action, null));
+        String action = mute ? "全麦静音" : "全麦取消静音";
+        RCVoiceRoomEngine.getInstance().muteOtherSeats(mute, new DefauRoomCallback("muteAll", action, null));
     }
 
     @Override

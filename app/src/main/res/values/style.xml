@@ -4,6 +4,22 @@
 
 <resources>
 
+    <style name="Basis_Style_Bottom_Menu" parent="android:Theme.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowAnimationStyle">@style/Basis_Style_Bottom_Menu_Anim</item>
+        <item name="android:windowFrame">@null</item><!--边框-->
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowIsTranslucent">false</item><!--半透明-->
+        <item name="android:backgroundDimEnabled">false</item><!--模糊-->
+    </style>
+
+    <style name="Basis_Style_Bottom_Menu_Anim">
+        <item name="android:windowEnterAnimation">@anim/basis_anim_bottom_in</item>
+        <item name="android:windowExitAnimation">@anim/basis_anim_bottom_out</item>
+    </style>
+
     <style name="style_main_btn">
         <item name="android:textColor">@color/white</item>
         <item name="android:textSize">16sp</item>
@@ -34,5 +50,15 @@
         <item name="android:windowIsFloating">true</item>
         <!--是否模糊-->
         <item name="android:backgroundDimEnabled">true</item>
+    </style>
+
+    <style name="Basis_Style_WX_Dialog" parent="android:style/Theme.Dialog">
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
+        <item name="android:windowSoftInputMode">stateUnspecified|adjustPan</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
     </style>
 </resources>

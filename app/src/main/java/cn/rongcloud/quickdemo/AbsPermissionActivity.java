@@ -1,13 +1,12 @@
 package cn.rongcloud.quickdemo;
 
 import android.Manifest;
+import android.app.Activity;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.kit.UIKit;
 import com.kit.cache.GsonUtil;
 import com.kit.utils.Logger;
 import com.kit.utils.PermissionUtil;
@@ -19,16 +18,18 @@ import com.kit.utils.PermissionUtil;
  * @Description: 权限申请基类
  */
 public abstract class AbsPermissionActivity extends AppCompatActivity {
-    final String TAG = getClass().getSimpleName();
-
     protected final static String[] VOICE_PERMISSIONS = new String[]{
             Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.CAMERA,
     };
+    final String TAG = getClass().getSimpleName();
+    protected Activity activity;
 
     @Override
     @Deprecated
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        activity = this;
         if (PermissionUtil.checkPermissions(this, onCheckPermission())) {
             onPermissionAccept(true);
         }

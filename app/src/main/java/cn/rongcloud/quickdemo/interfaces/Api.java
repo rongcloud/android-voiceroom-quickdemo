@@ -16,7 +16,7 @@ public interface Api {
      * @param apiFun
      * @param userId
      */
-    void handleRoomApi(ApiFun apiFun, String userId);
+    void handleRoomApi(ApiFun apiFun, String userId,String roomId);
 
     /**
      * 处理麦位api调用

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -25,7 +26,7 @@ import cn.rongcloud.quickdemo.QuickEventListener;
 import cn.rongcloud.quickdemo.R;
 import cn.rongcloud.quickdemo.interfaces.IResultBack;
 import cn.rongcloud.quickdemo.uitls.AccoutManager;
-import cn.rongcloud.quickdemo.interfaces.Api;
+import cn.rongcloud.quickdemo.uitls.UIKit;
 
 public class ApiFunDialogHelper {
     private final static ApiFunDialogHelper seatApi = new ApiFunDialogHelper();
@@ -52,6 +53,10 @@ public class ApiFunDialogHelper {
             ApiFun.room_free,
             ApiFun.room_free_un,
             ApiFun.invite_seat,
+            ApiFun.invite_pk,
+            ApiFun.invite_pk_cancel,
+            ApiFun.invite_pk_mute,
+            ApiFun.invite_quit_pk,
     };
 
 
@@ -128,6 +133,10 @@ public class ApiFunDialogHelper {
      * @param title    标题
      */
     public void showEditorDialog(Activity activity, String title, IResultBack<String> resultBack) {
+        showEditorDialog(activity, title, "", resultBack);
+    }
+
+    public void showEditorDialog(Activity activity, String title, String cofirm, IResultBack<String> resultBack) {
         if (null == dialog || !dialog.enable()) {
             dialog = new QDialog(activity,
                     new DialogInterface.OnDismissListener() {
@@ -142,7 +151,7 @@ public class ApiFunDialogHelper {
         dialog.replaceContent(title,
                 "",
                 null,
-                "新建/加入",
+                TextUtils.isEmpty(cofirm) ? "新建/加入" : cofirm,
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -162,7 +171,7 @@ public class ApiFunDialogHelper {
      * @param title
      * @param resultBack
      */
-    public void showSelectDialog(Activity activity, String title, IResultBack<String> resultBack) {
+    public void showSelectDialog(Activity activity, String title, IResultBack<AccoutManager.Accout> resultBack, boolean all) {
         if (null == dialog || !dialog.enable()) {
             dialog = new QDialog(activity,
                     new DialogInterface.OnDismissListener() {
@@ -180,24 +189,27 @@ public class ApiFunDialogHelper {
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if (null != resultBack) resultBack.onResult(accout.getUserId());
+                        if (null != resultBack) resultBack.onResult(accout);
                     }
                 });
             }
         };
         refresh.setLayoutManager(new LinearLayoutManager(dialog.getContext()));
         adapter.setRefreshView(refresh);
-        List<AccoutManager.Accout> accounts = AccoutManager.getAccounts();
-        List<AccoutManager.Accout> onlines = new ArrayList<>();
-
-        for (AccoutManager.Accout a : accounts) {
-            String id = a.getUserId();
-            // 排除自己
-            if (!id.equals(AccoutManager.getCurrentId()) && QuickEventListener.get().getAudienceIds().contains(a.getUserId())) {
-                onlines.add(a);
+        if (all) {
+            adapter.setData(AccoutManager.getAccounts(), true);
+        } else {
+            List<AccoutManager.Accout> accounts = AccoutManager.getAccounts();
+            List<AccoutManager.Accout> onlines = new ArrayList<>();
+            for (AccoutManager.Accout a : accounts) {
+                String id = a.getUserId();
+                // 排除自己
+                if (!id.equals(AccoutManager.getCurrentId()) && QuickEventListener.get().getAudienceIds().contains(a.getUserId())) {
+                    onlines.add(a);
+                }
             }
+            adapter.setData(onlines, true);
         }
-        adapter.setData(onlines, true);
         dialog.replaceContent(title,
                 "取消",
                 new View.OnClickListener() {
@@ -211,6 +223,47 @@ public class ApiFunDialogHelper {
                 refresh);
         dialog.show();
     }
+
+    public void showTipDialog(Activity activity,String message, IResultBack<Boolean> resultBack) {
+        if (null == dialog || !dialog.enable()) {
+            dialog = new QDialog(activity,
+                    new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialog) {
+                            ApiFunDialogHelper.this.dialog = null;
+                        }
+                    });
+        }
+        TextView textView = new TextView(dialog.getContext());
+        textView.setText(message);
+        textView.setTextSize(18);
+        textView.setTextColor(Color.parseColor("#343434"));
+        UIKit.runOnUiTherad(new Runnable() {
+            @Override
+            public void run() {
+                dialog.replaceContent("提示",
+                        "取消",
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                dismissDialog();
+                                if (null != resultBack) resultBack.onResult(false);
+                            }
+                        },
+                        "确定",
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                dismissDialog();
+                                if (null != resultBack) resultBack.onResult(true);
+                            }
+                        },
+                        textView);
+            }
+        });
+        dialog.show();
+    }
+
 
     public void showTipDialog(Activity activity, String title, String message, IResultBack<Boolean> resultBack) {
         if (null == dialog || !dialog.enable()) {
@@ -226,24 +279,29 @@ public class ApiFunDialogHelper {
         textView.setText(message);
         textView.setTextSize(18);
         textView.setTextColor(Color.parseColor("#343434"));
-        dialog.replaceContent(title,
-                "拒绝",
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        dismissDialog();
-                        if (null != resultBack) resultBack.onResult(false);
-                    }
-                },
-                "同意",
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        dismissDialog();
-                        if (null != resultBack) resultBack.onResult(true);
-                    }
-                },
-                textView);
+        UIKit.runOnUiTherad(new Runnable() {
+            @Override
+            public void run() {
+                dialog.replaceContent(title,
+                        "拒绝",
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                dismissDialog();
+                                if (null != resultBack) resultBack.onResult(false);
+                            }
+                        },
+                        "同意",
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                dismissDialog();
+                                if (null != resultBack) resultBack.onResult(true);
+                            }
+                        },
+                        textView);
+            }
+        });
         dialog.show();
     }
 

@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="20dp"
-    tools:context="cn.rongcloud.quickdemo.CreaterActivity">
+    android:padding="20dp">
 
     <TextView
         android:id="@+id/room_mode"
@@ -13,6 +11,14 @@
         android:layout_height="wrap_content"
         android:text="模式："
         android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/online_count"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="在线人数："
+        android:textSize="18sp" />
+
     <!--    房主信息-->
     <include
         android:id="@+id/creater"
@@ -39,5 +45,18 @@
         android:background="@drawable/selector_press_main"
         android:enabled="false"
         android:text="createAndJoin" />
+
+    <TextView
+        android:id="@+id/leave"
+        style="@style/style_main_btn"
+        android:background="@drawable/selector_press_main"
+        android:enabled="false"
+        android:text="Leave Room" />
+
+    <TextView
+        android:id="@+id/message"
+        style="@style/style_main_btn"
+        android:background="@drawable/selector_press_main"
+        android:text="Send Message" />
 
 </androidx.appcompat.widget.LinearLayoutCompat>

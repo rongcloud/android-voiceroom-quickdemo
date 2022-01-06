@@ -11,6 +11,7 @@ public enum ApiFun {
     seat_request_cancel("取消上麦请求"),
     seat_extra("扩展属性"),
     seat_pick_out("抱下麦"),
+
     room_all_mute("全麦静麦"),
     room_all_mute_un("取消全麦静音"),
     room_all_lock("全麦锁麦"),
@@ -19,11 +20,19 @@ public enum ApiFun {
     room_update_count("修改麦位数"),
     room_free("自由模式"),
     room_free_un("申请模式"),
-    invite_seat("邀请上麦");
+
+    invite_seat("邀请上麦"),
+    invite_pk("邀请PK"),
+    invite_pk_cancel("取消PK邀请"),
+    invite_pk_mute("静麦PK对象"),
+    invite_quit_pk("退出PK");
+
     private String value;
+
     ApiFun(String value) {
         this.value = value;
     }
+
     public String getValue() {
         return value;
     }

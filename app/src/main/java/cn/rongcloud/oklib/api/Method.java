@@ -1,0 +1,8 @@
+package cn.rongcloud.oklib.api;
+
+public enum Method {
+    get,
+    post,
+    delete,
+    put
+}

@@ -6,18 +6,12 @@ import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.rongcloud.authentication.bean.Account;
+
 public class AccoutManager {
     private final static List<Accout> accounts = new ArrayList<>(4);
 
-    static {
-        // TODO: 第二步  must add account
-        //  Accout accout = new Accout("Your UserId", "Your UserName");
-        //  accout.token = "Your Token ";//token 需和userId一一对应
-        //  accounts.add(accout);
-    }
-
     private static String currentId;//当前账号
-
     public static List<Accout> getAccounts() {
         return accounts;
     }
@@ -26,8 +20,14 @@ public class AccoutManager {
         return currentId;
     }
 
-    public static void setCurrent(String currentId) {
-        AccoutManager.currentId = currentId;
+    public static void setAcctount(Account a,boolean mine){
+        Accout accout = new Accout(a.getUserId(),a.getUserName());
+        accout.token = a.getImToken();
+        if (mine){
+            currentId = accout.getUserId();
+        }
+        accounts.add(accout);
+
     }
 
     @Nullable
@@ -55,6 +55,7 @@ public class AccoutManager {
         private String name;
         private String userId;
         private String token;
+        private String extra;
 
         Accout(String userId, String name) {
             this.name = name;
@@ -65,6 +66,9 @@ public class AccoutManager {
             return name;
         }
 
+        public String getExtra() {
+            return extra;
+        }
 
         public String getUserId() {
             return userId;

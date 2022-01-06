@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright © 2021 RongCloud. All rights reserved.
+  -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/vr_shape_dialog_bg">
+
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="35px"
+        android:layout_marginBottom="30px"
+        android:text="已经邀请"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@+id/cancele_pk"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/cancele_pk"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30px"
+        android:layout_marginTop="20px"
+        android:layout_marginRight="30px"
+        android:layout_marginBottom="30px"
+        android:background="@drawable/vr_selector_cancel_btn_bg"
+        android:gravity="center"
+        android:paddingTop="15px"
+        android:paddingBottom="15px"
+        android:text="取消pk邀请"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@+id/cancel_dialog"
+        app:layout_constraintTop_toBottomOf="@+id/title" />
+
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/cancel_dialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30px"
+        android:layout_marginTop="40px"
+        android:layout_marginRight="30px"
+        android:background="@drawable/vr_selector_cancel_btn_bg"
+        android:gravity="center"
+        android:paddingTop="15px"
+        android:paddingBottom="15px"
+        android:text="取消"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cancele_pk" />
+</androidx.constraintlayout.widget.ConstraintLayout>

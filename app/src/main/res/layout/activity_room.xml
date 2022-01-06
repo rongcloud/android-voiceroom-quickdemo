@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/room_mode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="模式："
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/online_count"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="在线人数："
+        android:textSize="18sp" />
+
+    <!--    房主信息-->
+    <include
+        android:id="@+id/creater"
+        layout="@layout/layout_seat_item" />
+
+    <!--    麦位列表-->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rl_seat"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/leave"
+            android:layout_width="112dp"
+            android:layout_height="56dp"
+            android:background="@drawable/selector_press_main"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:text="离开房间" />
+
+        <TextView
+            android:id="@+id/close"
+            android:layout_width="112dp"
+            android:layout_height="56dp"
+            android:layout_marginLeft="20dp"
+            android:background="@drawable/selector_press_main"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:text="关闭房间" />
+    </LinearLayout>
+
+
+</androidx.appcompat.widget.LinearLayoutCompat>
