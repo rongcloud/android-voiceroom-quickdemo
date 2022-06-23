@@ -4,11 +4,11 @@ import android.app.Activity;
 import android.view.View;
 
 import com.kit.UIKit;
+import com.kit.utils.KToast;
 import com.kit.utils.Logger;
+import com.kit.wapper.IResultBack;
 
-import cn.rongcloud.quickdemo.R;
-import cn.rongcloud.quickdemo.interfaces.IResultBack;
-import cn.rongcloud.quickdemo.uitls.KToast;
+import cn.rongcloud.voicequickdemo.R;
 import cn.rongcloud.voiceroom.api.RCVoiceRoomEngine;
 import cn.rongcloud.voiceroom.api.callback.RCVoiceRoomCallback;
 
@@ -43,13 +43,13 @@ public class CancelPKDialog extends BottomDialog implements View.OnClickListener
             RCVoiceRoomEngine.getInstance().cancelPKInvitation(roomId, userId, new RCVoiceRoomCallback() {
                 @Override
                 public void onSuccess() {
-                    KToast.showToast("取消pk邀请成功");
+                    KToast.show("取消pk邀请成功");
                     if (null != resultBack) resultBack.onResult(true);
                 }
 
                 @Override
                 public void onError(int i, String s) {
-                    KToast.showToast("取消pk邀请失败");
+                    KToast.show("取消pk邀请失败");
                     if (null != resultBack) resultBack.onResult(false);
                 }
             });

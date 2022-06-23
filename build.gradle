@@ -2,12 +2,12 @@
 buildscript {
     repositories {
         maven { url "https://maven.rongcloud.cn/repository/maven-releases/" }
+//        maven { url "https://maven.rongcloud.cn/repository/maven-test/" }
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
     }
     dependencies {
-//        classpath "com.android.tools.build:gradle:4.2.2"
         classpath "com.android.tools.build:gradle:7.0.3"
 
         // NOTE: Do not place your application dependencies here; they belong
@@ -18,9 +18,9 @@ buildscript {
 allprojects {
     repositories {
         maven { url "https://maven.rongcloud.cn/repository/maven-releases/" }
+//        maven { url "https://maven.rongcloud.cn/repository/maven-test/" }
         google()
         mavenCentral()
-        jcenter() // Warning: this repository is going to shut down soon
         maven { url 'https://jitpack.io' }
     }
 }

@@ -13,7 +13,7 @@ import com.bcq.refresh.progress.IndicatorView;
 import com.bcq.refresh.progress.Style;
 
 import cn.rongcloud.oklib.wrapper.interfaces.ILoadTag;
-import cn.rongcloud.quickdemo.R;
+import cn.rongcloud.voicequickdemo.R;
 
 
 /**

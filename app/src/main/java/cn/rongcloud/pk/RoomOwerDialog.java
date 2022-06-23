@@ -24,7 +24,8 @@ import cn.rongcloud.oklib.OkApi;
 import cn.rongcloud.oklib.WrapperCallBack;
 import cn.rongcloud.oklib.wrapper.Wrapper;
 import cn.rongcloud.pk.domain.PKResult;
-import cn.rongcloud.quickdemo.R;
+import cn.rongcloud.voicequickdemo.R;
+import cn.rongcloud.voicequickdemo.uitls.AccoutManager;
 import cn.rongcloud.voiceroom.api.RCVoiceRoomEngine;
 import cn.rongcloud.voiceroom.api.callback.RCVoiceRoomCallback;
 
@@ -125,6 +126,9 @@ public class RoomOwerDialog extends BottomDialog {
             public void onResult(Wrapper result) {
                 Logger.e(TAG, "requestOwners#onResult:" + GsonUtil.obj2Json(result));
                 List<VoiceRoom> rooms = result.getList(VoiceRoom.class);
+                for (VoiceRoom room : rooms) {
+                    AccoutManager.setAcctount(room.getCreateUser(), false);
+                }
                 adapter.setData(rooms, true);
             }
 

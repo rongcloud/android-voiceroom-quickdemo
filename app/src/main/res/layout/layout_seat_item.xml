@@ -9,7 +9,7 @@
     android:layout_height="wrap_content">
 
 
-    <cn.rongcloud.quickdemo.widget.CircleImageView
+    <ImageView
         android:id="@+id/iv_portrait"
         android:layout_width="56dp"
         android:layout_height="56dp"
@@ -56,6 +56,8 @@
         android:textAlignment="textStart"
         android:textColor="@color/black"
         android:textSize="10sp"
+        android:maxLines="1"
+        android:ellipsize="end"
         app:layout_constraintBottom_toTopOf="@+id/member_extra"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -67,6 +69,19 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
+        android:textAlignment="textStart"
+        android:textColor="@color/black"
+        android:textSize="10sp"
+        app:layout_constraintBottom_toTopOf="@+id/member_audio"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/member_name"
+        tools:text="@string/app_name" />
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/member_audio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
         android:layout_marginBottom="10dp"
         android:textAlignment="textStart"
         android:textColor="@color/black"
@@ -74,7 +89,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/member_name"
+        app:layout_constraintTop_toBottomOf="@+id/member_extra"
         tools:text="@string/app_name" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

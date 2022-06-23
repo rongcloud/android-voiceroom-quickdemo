@@ -29,4 +29,6 @@ public interface Api {
     String ONLINE_CREATER = HOST + "mic/room/online/created/list";
     // 当前所属房间
     String USER_ROOM_CHANGE = HOST + "user/change";
+
+    String MEMBERS = HOST + "/mic/room/"+KEY_ROOM_ID+"/members";
 }

@@ -15,7 +15,7 @@ import androidx.annotation.LayoutRes;
 import com.kit.utils.Logger;
 import com.kit.utils.ScreenUtil;
 
-import cn.rongcloud.quickdemo.R;
+import cn.rongcloud.voicequickdemo.R;
 
 
 public class BottomDialog {

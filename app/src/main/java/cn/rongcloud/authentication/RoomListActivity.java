@@ -1,11 +1,13 @@
 package cn.rongcloud.authentication;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bcq.adapter.recycle.RcyHolder;
@@ -13,7 +15,9 @@ import com.bcq.adapter.recycle.RcySAdapter;
 import com.bcq.refresh.IRefresh;
 import com.bcq.refresh.XRecyclerView;
 import com.kit.UIKit;
+import com.kit.utils.KToast;
 import com.kit.utils.Logger;
+import com.kit.wapper.IResultBack;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,15 +30,14 @@ import cn.rongcloud.oklib.OkApi;
 import cn.rongcloud.oklib.WrapperCallBack;
 import cn.rongcloud.oklib.wrapper.Wrapper;
 import cn.rongcloud.oklib.wrapper.interfaces.ILoadTag;
-import cn.rongcloud.quickdemo.AbsPermissionActivity;
-import cn.rongcloud.quickdemo.R;
-import cn.rongcloud.quickdemo.RoomActivity;
-import cn.rongcloud.quickdemo.VoiceRoomApi;
-import cn.rongcloud.quickdemo.interfaces.IResultBack;
-import cn.rongcloud.quickdemo.uitls.AccoutManager;
-import cn.rongcloud.quickdemo.uitls.KToast;
-import cn.rongcloud.quickdemo.widget.ApiFunDialogHelper;
+import cn.rongcloud.voicequickdemo.AbsPermissionActivity;
+import cn.rongcloud.voicequickdemo.R;
+import cn.rongcloud.voicequickdemo.RoomActivity;
+import cn.rongcloud.voicequickdemo.VoiceRoomApi;
+import cn.rongcloud.voicequickdemo.uitls.AccoutManager;
+import cn.rongcloud.voicequickdemo.widget.ApiFunDialogHelper;
 import cn.rongcloud.voiceroom.model.RCVoiceRoomInfo;
+import io.rong.imlib.RongCoreClient;
 
 /**
  * 房间列表
@@ -83,13 +86,14 @@ public class RoomListActivity extends AbsPermissionActivity {
         adapter = new RcySAdapter<VoiceRoom, RcyHolder>(this, R.layout.layout_room_item) {
             @Override
             public void convert(RcyHolder holder, VoiceRoom room, int position) {
+                holder.setBackgroundResource(R.id.room_theme, R.mipmap.img_room_them);
                 holder.setText(R.id.room_name, room.getRoomName());
                 holder.setText(R.id.user_id, room.getCreateUser().getUserName());
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         boolean owner = TextUtils.equals(room.getUserId(), AccoutManager.getCurrentId());
-                        jumpToVoiceRoom(room.getRoomId(), owner);
+                        jumpToVoiceRoom(room.getRoomId(), owner, false);
                     }
                 });
             }
@@ -115,7 +119,7 @@ public class RoomListActivity extends AbsPermissionActivity {
             @Override
             public void onResult(String result) {
                 if (TextUtils.isEmpty(result)) {
-                    KToast.showToast("请输入房间名称");
+                    KToast.show("请输入房间名称");
                     return;
                 }
                 createRoomByService(result);
@@ -142,7 +146,7 @@ public class RoomListActivity extends AbsPermissionActivity {
         OkApi.get(Api.ROOM_LIST, params, new WrapperCallBack() {
             @Override
             public void onError(int code, String msg) {
-                KToast.showToast("拉取房间列表失败");
+                KToast.show("拉取房间列表失败");
             }
 
             @Override
@@ -179,7 +183,7 @@ public class RoomListActivity extends AbsPermissionActivity {
         Map<String, Object> params = new HashMap<>();
         params.put("name", roomName);
         params.put("themePictureUrl", "");
-        params.put("isPrivate", 1);
+        params.put("isPrivate", 0);
         params.put("password", "");
         params.put("kv", new ArrayList());
         params.put("roomType", Api.ROOM_TYPE);// 1：语聊房  2：电台房 3：直播房
@@ -189,24 +193,24 @@ public class RoomListActivity extends AbsPermissionActivity {
             @Override
             public void onResult(Wrapper result) {
                 if (null == result) {
-                    KToast.showToast("创建房间失败");
+                    KToast.show("创建房间失败");
                     if (null != tag) tag.dismiss();
                     return;
                 }
                 VoiceRoom voiceRoom = result.get(VoiceRoom.class);
                 if (null == voiceRoom) {
-                    KToast.showToast("创建房间失败");
+                    KToast.show("创建房间失败");
                     if (null != tag) tag.dismiss();
                     return;
                 }
                 if (result.getCode() == 10000) {
-                    createRoomBySDK(tag, voiceRoom.getRoomId(), voiceRoom.getRoomName());
+                    createRoomBySDK(tag, voiceRoom, voiceRoom.getRoomName());
                 } else {
                     if (null != tag) tag.dismiss();
                     if (30016 == result.getCode()) {
-                        KToast.showToast("您已经创建过房间，不能重复创建");
+                        KToast.show("您已经创建过房间，不能重复创建");
                     } else {
-                        KToast.showToast("创建房间失败");
+                        KToast.show("创建房间失败");
                     }
                 }
             }
@@ -215,7 +219,7 @@ public class RoomListActivity extends AbsPermissionActivity {
             public void onError(int code, String msg) {
                 super.onError(code, msg);
                 if (null != tag) tag.dismiss();
-                KToast.showToast("创建房间失败");
+                KToast.show("创建房间失败");
             }
         });
     }
@@ -224,15 +228,16 @@ public class RoomListActivity extends AbsPermissionActivity {
      * 由sdk 创建房间，正在创建房间的逻辑
      *
      * @param tag      load tag
-     * @param roomId   房间id
+     * @param room     房间id
      * @param roomName 房间名称
      */
-    void createRoomBySDK(ILoadTag tag, String roomId, String roomName) {
-        if (TextUtils.isEmpty(roomId) || TextUtils.isEmpty(roomName)) {
-            KToast.showToast("房间ID或房间名称不能为空");
+    void createRoomBySDK(ILoadTag tag, VoiceRoom room, String roomName) {
+        if (null == room || TextUtils.isEmpty(room.getRoomId()) || TextUtils.isEmpty(roomName)) {
+            KToast.show("房间ID或房间名称不能为空");
             if (null != tag) tag.dismiss();
             return;
         }
+        String roomId = room.getRoomId();
         RCVoiceRoomInfo roomInfo = VoiceRoomApi.getApi().getRoomInfo();
         roomInfo.setRoomName(roomName);
         roomInfo.setSeatCount(DEF_SEAT_COUNT);
@@ -243,24 +248,35 @@ public class RoomListActivity extends AbsPermissionActivity {
             @Override
             public void onResult(Boolean result) {
                 if (null != tag) tag.dismiss();
-                KToast.showToast(result ? "创建房间成功" : "创建房间失败");
+                Logger.e(TAG, "createAndJoin:" + RongCoreClient.getInstance().getCurrentConnectionStatus());
                 if (result) {
-                    // 创建成功后 离开执行离开房间 便于：RoomActivity 统一执行joinRoom即可
-                    Logger.e(TAG, "createAndJoin:");
-                    VoiceRoomApi.getApi().leaveRoom(new IResultBack<Boolean>() {
+                    UIKit.postDelayed(new Runnable() {
                         @Override
-                        public void onResult(Boolean result) {
-                            Logger.e(TAG, "leaveRoom:");
-                            UIKit.postDelayed(new Runnable() {
+                        public void run() {
+                            if (null != adapter) {
+                                List<VoiceRoom> list = adapter.getData();
+                                list.add(0, room);
+                                adapter.setData(list, true);
+                            }
+                            // 创建成功后 离开执行离开房间 否则：RoomActivity joinRoom不会成功
+                            VoiceRoomApi.getApi().leaveRoom(new IResultBack<Boolean>() {
                                 @Override
-                                public void run() {
-                                    jumpToVoiceRoom(roomId, true);
+                                public void onResult(Boolean result) {
+                                    Logger.e(TAG, "leaveRoom:");
+                                    KToast.show(result ? "创建房间成功" : "创建房间失败");
+                                    UIKit.postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            jumpToVoiceRoom(roomId, true, true);
+                                        }
+                                    }, 0);
                                 }
-                            }, 500);
+                            });
                         }
-                    });
+                    }, 0);
                 } else {
                     // 创建失败 需通知服务端销毁房间
+                    KToast.show("创建房间失败");
                     destoryRoomByService(activity, roomId);
                 }
             }
@@ -282,16 +298,16 @@ public class RoomListActivity extends AbsPermissionActivity {
             public void onError(int code, String msg) {
                 super.onError(code, msg);
                 if (null != tag) tag.dismiss();
-                KToast.showToast("关闭房间失败");
+                KToast.show("关闭房间失败");
             }
 
             @Override
             public void onResult(Wrapper wrapper) {
                 if (null != tag) tag.dismiss();
                 if (wrapper.ok()) {
-                    KToast.showToast("关闭房间成功");
+                    KToast.show("关闭房间成功");
                 } else {
-                    KToast.showToast("关闭房间失败");
+                    KToast.show("关闭房间失败");
                 }
             }
         });
@@ -303,7 +319,15 @@ public class RoomListActivity extends AbsPermissionActivity {
      * @param roomId 房间Id
      * @param owner  是不是房主
      */
-    private void jumpToVoiceRoom(String roomId, boolean owner) {
-        RoomActivity.joinVoiceRoom(activity, roomId, owner);
+    private void jumpToVoiceRoom(String roomId, boolean owner, boolean enter) {
+        RoomActivity.joinVoiceRoom(activity, roomId, owner, enter);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_OK && requestCode == RoomActivity.ACTION_ROOM) {
+            getRoomListFromService(true);
+        }
     }
 }

@@ -45,5 +45,5 @@
 -keep class cn.rongcloud.voiceroom.model.** {*;}
 -keep class cn.rongcloud.voiceroom.utils.** {*;}
 -keep class cn.rongcloud.messager.** {*;}
-
+-keep public class com.logger.**{*;}
 -ignorewarnings
