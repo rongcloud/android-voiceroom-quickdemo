@@ -29,7 +29,7 @@ import okhttp3.Headers;
 
 public class QuickApplication extends Application {
     private final static String TAG = "QuickApplication";
-    private final static String APP_KEY = "";
+    private final static String APP_KEY = "pvxdm17jpw7ar";
     private final static String Business_Token = "";
     private final static List<Activity> tasks = new ArrayList<>(4);
 
