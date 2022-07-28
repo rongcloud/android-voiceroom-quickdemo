@@ -55,7 +55,6 @@ public class LoginActivity extends AbsPermissionActivity {
     void initView() {
         setContentView(R.layout.activity_login);
         et_phone = findViewById(R.id.et_phone);
-        et_phone.setText("18510371545");
         findViewById(R.id.btn_login).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
