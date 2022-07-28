@@ -2,6 +2,7 @@ package cn.rongcloud.example;
 
 import android.net.Uri;
 
+import cn.rongcloud.authentication.Api;
 import cn.rongcloud.example.provider.Provide;
 import io.rong.imlib.model.UserInfo;
 
@@ -35,7 +36,7 @@ public class User implements Provide {
     }
 
     public UserInfo toUserInfo() {
-        return new UserInfo(userId, userName, Uri.parse(portraitUrl));
+        return new UserInfo(userId, userName, Uri.parse(Api.FILE_URL + portraitUrl));
     }
 
     public static User fromUserInfo(UserInfo userInfo) {

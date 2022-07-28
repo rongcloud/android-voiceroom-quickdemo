@@ -15,6 +15,7 @@ import com.bcq.adapter.recycle.RcySAdapter;
 import com.bcq.refresh.IRefresh;
 import com.bcq.refresh.XRecyclerView;
 import com.kit.UIKit;
+import com.kit.cache.GsonUtil;
 import com.kit.utils.KToast;
 import com.kit.utils.Logger;
 import com.kit.wapper.IResultBack;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import cn.rongcloud.authentication.bean.VoiceRoom;
+import cn.rongcloud.example.UserManager;
 import cn.rongcloud.oklib.LoadTag;
 import cn.rongcloud.oklib.OkApi;
 import cn.rongcloud.oklib.WrapperCallBack;
@@ -38,6 +40,7 @@ import cn.rongcloud.voicequickdemo.uitls.AccoutManager;
 import cn.rongcloud.voicequickdemo.widget.ApiFunDialogHelper;
 import cn.rongcloud.voiceroom.model.RCVoiceRoomInfo;
 import io.rong.imlib.RongCoreClient;
+import io.rong.imlib.model.UserInfo;
 
 /**
  * 房间列表
@@ -112,6 +115,12 @@ public class RoomListActivity extends AbsPermissionActivity {
             }
         });
         getRoomListFromService(true);
+        UserManager.provider().get("0adcae89-061d-4396-82e5-e0827d5bb2c9", new cn.rongcloud.example.provider.IResultBack<UserInfo>() {
+            @Override
+            public void onResult(UserInfo userInfo) {
+                Logger.e(TAG, "userInfo = " + (null != userInfo ? GsonUtil.obj2Json(userInfo) : "null"));
+            }
+        });
     }
 
     void createVoiceRoom() {

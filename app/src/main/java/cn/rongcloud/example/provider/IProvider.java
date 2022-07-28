@@ -21,7 +21,7 @@ public interface IProvider<T> {
     void update(T t);
 
     /**
-     * 批量跟新
+     * 批量更新
      *
      * @param updates
      */

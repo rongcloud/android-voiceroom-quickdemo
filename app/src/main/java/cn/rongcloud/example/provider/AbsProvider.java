@@ -37,10 +37,6 @@ public abstract class AbsProvider<T extends Provide> implements IProvider<T> {
         provideEntry(key, resultBack, false);
     }
 
-    public T getSync(String key) {
-        return lruCache.get(key);
-    }
-
     /**
      * @param key         实体的唯一标识
      * @param resultBack  回调

@@ -1,16 +1,22 @@
 package cn.rongcloud.example;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.rongcloud.authentication.Api;
 import cn.rongcloud.example.provider.IProvider;
 import cn.rongcloud.example.provider.IResultBack;
+import cn.rongcloud.oklib.OkApi;
+import cn.rongcloud.oklib.WrapperCallBack;
+import cn.rongcloud.oklib.wrapper.Wrapper;
 import io.rong.imkit.userinfo.RongUserInfoManager;
 import io.rong.imkit.userinfo.UserDataProvider;
 import io.rong.imkit.userinfo.model.GroupUserInfo;
@@ -88,7 +94,6 @@ public class UserManager implements IProvider<UserInfo> {
         onceObservers.put(userId, resultBack);
     }
 
-
     @Override
     public void observe(@NonNull String userId, @NonNull IResultBack<UserInfo> resultBack) {
         if (!observers.containsKey(userId)) observers.put(userId, resultBack);
@@ -127,9 +132,30 @@ public class UserManager implements IProvider<UserInfo> {
         });
     }
 
+    private final static String API_BATCH = Api.HOST + "/user/batch";
 
     private void getUserFormService(String userId, IResultBack<User> resultBack) {
         // TODO: 2022/7/28 具体实现从服务端获取实体,并通过resultBack.onResult(user)回调
+        Map<String, Object> params = new HashMap<>(2);
+        params.put("userIds", Arrays.asList(userId));
+        OkApi.post(API_BATCH, params, new WrapperCallBack() {
+            @Override
+            public void onError(int code, String msg) {
+                Log.e(TAG, "provideFromService#onError code  = " + code + " message = " + msg);
+                if (null != resultBack) resultBack.onResult(null);
+            }
+
+            @Override
+            public void onResult(Wrapper result) {
+                List<User> users = result.getList(User.class);
+                Log.e(TAG, "provideFromService: size = " + (null == users ? 0 : users.size()));
+                User user = null;
+                if (null != users && !users.isEmpty()) {
+                    user = users.get(0);
+                }
+                if (null != resultBack) resultBack.onResult(user);
+            }
+        });
     }
 
     private static class UserObserver implements RongUserInfoManager.UserDataObserver {
