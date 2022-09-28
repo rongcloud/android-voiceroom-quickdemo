@@ -25,6 +25,7 @@ import cn.rongcloud.voiceroom.model.PKResponse;
 import cn.rongcloud.voiceroom.model.RCPKInfo;
 import cn.rongcloud.voiceroom.model.RCVoiceRoomInfo;
 import cn.rongcloud.voiceroom.model.RCVoiceSeatInfo;
+import io.rong.imlib.RongCoreClient;
 import io.rong.imlib.model.Message;
 
 public class QuickEventListener implements RCVoiceRoomEventListener {
@@ -57,7 +58,7 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
     private RoomInforObserver roomInforObserver;
     private SeatObserver seatObserver;
     private PKObserver pkObserver;
-    private static String TAG = "QuickEventListener";
+    private static String TAG = "_QuickEventListener";
     private static QuickEventListener listener = new QuickEventListener();
     //设置监听标识
     private WeakReference<IRCVoiceRoomEngine> reference;
@@ -127,6 +128,24 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
      */
     public List<String> getAudienceIds() {
         return mAudienceIds;
+    }
+
+    public boolean isInSeat() {
+        return null != getSeatInfo(RongCoreClient.getInstance().getCurrentUserId());
+    }
+
+    public int getIndexByUserId(String userId) {
+        synchronized (obj) {
+            int count = mSeatInfos.size();
+            for (int i = 0; i < count; i++) {
+                RCVoiceSeatInfo s = mSeatInfos.get(i);
+                if (userId.equals(s.getUserId())) {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
     }
 
     /**
@@ -292,11 +311,16 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
     @Override
     public void onSpeakingStateChanged(int index, int audioLevel) {
 //        Log.d(TAG, "onSpeakingStateChanged: index = " + index + " audioLevel = " + audioLevel);
-//        Seat seat = getSeatInfo(index);
-//        if (null != seat) {
-//            seat.setAudioLevel(audioLevel);
-//            if (null != seatListObserver) seatListObserver.onSeatList(mSeatInfos);
-//        }
+        Seat seat = getSeatInfo(index);
+        if (null != seat) {
+            seat.setAudioLevel(audioLevel);
+            if (null != seatListObserver) seatListObserver.onSeatList(mSeatInfos);
+        }
+    }
+
+    @Override
+    public void onUserSpeakingStateChanged(String userId, int audioLevel) {
+//        Log.d(TAG, "onUserSpeakingStateChanged: userId = " + userId + " audioLevel = " + audioLevel);
     }
 
     @Override
@@ -336,7 +360,7 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
                         //获取可用麦位索引
                         int availableIndex = getAvailableSeatIndex();
                         if (availableIndex > -1) {
-                            VoiceRoomApi.getApi().enterSeat(availableIndex, null);
+                            VoiceRoomApi.getApi().enterSeat(availableIndex, false,null);
                         } else {
                             KToast.show("当前没有空余的麦位");
                         }
@@ -372,7 +396,7 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
         int availableIndex = getAvailableSeatIndex();
         if (availableIndex > -1) {
             KToast.show("您的上麦申请被同意啦");
-            VoiceRoomApi.getApi().enterSeat(availableIndex, null);
+            VoiceRoomApi.getApi().enterSeat(availableIndex,false, null);
         } else {
             KToast.show("当前没有空余的麦位");
         }
@@ -519,7 +543,7 @@ public class QuickEventListener implements RCVoiceRoomEventListener {
         ApiFunDialogHelper.helper().showTipDialog(activity.get(), "PK邀请", "'" + name + "'向您发起PK申请，是否同意？", new IResultBack<Boolean>() {
             @Override
             public void onResult(Boolean result) {
-                RCVoiceRoomEngine.getInstance().responsePKInvitation(inviterRoomId, inviterUserId, result ? PKResponse.accept : PKResponse.ignore, new RCVoiceRoomCallback() {
+                RCVoiceRoomEngine.getInstance().responsePKInvitation(inviterRoomId, inviterUserId, result ? PKResponse.accept : PKResponse.reject, new RCVoiceRoomCallback() {
                     @Override
                     public void onSuccess() {
                         KToast.show(result ? "同意PK成功" : "拒绝PK成功");

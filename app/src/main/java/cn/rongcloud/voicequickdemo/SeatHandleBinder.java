@@ -7,7 +7,6 @@ import android.widget.ImageView;
 
 import com.bcq.adapter.recycle.RcyHolder;
 import com.kit.utils.ImageLoader;
-import com.kit.utils.ResUtil;
 
 import java.lang.ref.WeakReference;
 
@@ -80,6 +79,12 @@ public class SeatHandleBinder {
                         onApi(apiFun, seatInfo, index);
                     }
                 });
+//                if (QuickEventListener.get().isInSeat()) {
+//                    VoiceRoomApi.getApi().jumpTo(index, null);
+//                } else {
+//                    VoiceRoomApi.getApi().enterSeat(index, null);
+//                }
+
             }
         });
     }

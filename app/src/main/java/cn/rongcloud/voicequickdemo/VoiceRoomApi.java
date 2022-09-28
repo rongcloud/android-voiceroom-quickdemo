@@ -11,8 +11,10 @@ import com.kit.wapper.IResultBack;
 import cn.rongcloud.rtc.api.RCRTCConfig;
 import cn.rongcloud.voicequickdemo.interfaces.Api;
 import cn.rongcloud.voiceroom.api.RCVoiceRoomEngine;
+import cn.rongcloud.voiceroom.api.callback.IError;
 import cn.rongcloud.voiceroom.api.callback.RCVoiceRoomCallback;
 import cn.rongcloud.voiceroom.model.RCVoiceRoomInfo;
+import cn.rongcloud.voiceroom.model.RCVoiceSeatInfo;
 
 public class VoiceRoomApi implements Api {
     private final static String TAG = "VoiceRoomApi";
@@ -119,7 +121,6 @@ public class VoiceRoomApi implements Api {
                         } else {
                             KToast.show("取消屏蔽音频成功：【" + code + "】 msg = " + message);
                         }
-
                     }
                 });
                 break;
@@ -158,19 +159,22 @@ public class VoiceRoomApi implements Api {
                 lockSeat(seatIndex, false, null);
                 break;
             case seat_left://下麦
-                leaveSeat(null);
+                leaveSeat(false, null);
+                break;
+            case seat_left_plugin:
+                leaveSeat(true, null);
                 break;
             case seat_enter://上麦
-                enterSeat(seatIndex, null);
+                enterSeat(seatIndex, false, null);
+                break;
+            case seat_enter_plugin:
+                enterSeat(seatIndex, true, null);
                 break;
             case seat_request://请求上麦
                 requestSeat(null);
                 break;
             case seat_request_cancel://取消请求上麦
                 cancelRequestSeat(null);
-                break;
-            case seat_extra://扩展属性
-                updateSeatExtra(seatIndex, "附加" + seatIndex, null);
                 break;
             case seat_pick_out://抱下麦
                 RCVoiceRoomEngine.getInstance().kickUserFromSeat(
@@ -182,6 +186,37 @@ public class VoiceRoomApi implements Api {
             case seat_open_mic://打开本地麦克风
                 RCVoiceRoomEngine.getInstance().disableAudioRecording(false);
                 break;
+            case seat_switch:
+                jumpTo(seatIndex, false, null);
+                break;
+            case seat_switch_plugin:
+                jumpTo(seatIndex, true, null);
+                break;
+            case seat_update:
+                updateSeatInfo(seatIndex, false, null);
+                break;
+            case seat_update_plugin:
+                updateSeatInfo(seatIndex, true, null);
+                break;
+        }
+    }
+
+    public void updateSeatInfo(int seatIndex, boolean plugin, IResultBack<Boolean> resultBack) {
+        if (plugin) {
+            RCVoiceSeatInfo seat = new RCVoiceSeatInfo();
+            seat.setMute(true);
+            seat.setExtra("");
+            RCVoiceRoomEngine.getPlugin().updateSeatInfo(seatIndex, seat, new DefauRoomCallback("updateSeatInfo", "修改扩展信息", resultBack));
+        } else {
+            RCVoiceRoomEngine.getInstance().updateSeatInfo(seatIndex, "", new DefauRoomCallback("updateSeatInfo", "修改扩展信息", resultBack));
+        }
+    }
+
+    public void jumpTo(int seatIndex, boolean plugin, IResultBack<Boolean> resultBack) {
+        if (plugin) {
+            RCVoiceRoomEngine.getPlugin().switchSeatTo(seatIndex, true, true, new DefauRoomCallback("jumpTo", "跳麦", resultBack));
+        } else {
+            RCVoiceRoomEngine.getInstance().switchSeatTo(seatIndex, new DefauRoomCallback("jumpTo", "跳麦", resultBack));
         }
     }
 
@@ -290,8 +325,7 @@ public class VoiceRoomApi implements Api {
     @Override
     public void muteAll(boolean mute) {
         String action = mute ? "全麦静音" : "全麦取消静音";
-//        RCVoiceRoomEngine.getInstance().muteOtherSeats(mute, new DefauRoomCallback("muteAll", action, null));
-        RCVoiceRoomEngine.getInstance().muteOtherSeats(mute, null);
+        RCVoiceRoomEngine.getInstance().muteOtherSeats(mute, new DefauRoomCallback("muteAll", action, null));
     }
 
     @Override
@@ -302,14 +336,25 @@ public class VoiceRoomApi implements Api {
     }
 
     @Override
-    public void leaveSeat(IResultBack<Boolean> resultBack) {
-        RCVoiceRoomEngine.getInstance().leaveSeat(new DefauRoomCallback("leaveSeat", "下麦", resultBack));
+    public void leaveSeat(boolean plugin, IResultBack<Boolean> resultBack) {
+        if (plugin) {
+            RCVoiceRoomEngine.getPlugin().leaveSeat(true, true, new DefauRoomCallback("leaveSeat", "下麦", resultBack));
+        } else {
+            RCVoiceRoomEngine.getInstance().leaveSeat(new DefauRoomCallback("leaveSeat", "下麦", resultBack));
+        }
     }
 
     @Override
-    public void enterSeat(int index, IResultBack<Boolean> resultBack) {
-        RCVoiceRoomEngine.getInstance().enterSeat(index,
-                new DefauRoomCallback("enterSeat", "上麦", resultBack));
+    public void enterSeat(int index, boolean plugin, IResultBack<Boolean> resultBack) {
+        if (plugin) {
+            RCVoiceSeatInfo seat = new RCVoiceSeatInfo();
+            // 默认为false，如不修改该属性，会将默认值false赋值给目标麦位
+            seat.setMute(true);
+            seat.setExtra("麦上啦");
+            RCVoiceRoomEngine.getPlugin().enterSeat(index, seat, new DefauRoomCallback("enterSeat", "上麦", resultBack));
+        } else {
+            RCVoiceRoomEngine.getInstance().enterSeat(index, new DefauRoomCallback("enterSeat", "上麦", resultBack));
+        }
     }
 
     @Override
@@ -338,6 +383,7 @@ public class VoiceRoomApi implements Api {
 
     @Override
     public void updateSeatExtra(int seatIndex, String extra, IResultBack<Boolean> resultBack) {
+        Logger.e("_QuickEventListener", "updateSeatExtra: index= " + seatIndex + " extra = " + extra);
         RCVoiceRoomEngine.getInstance().updateSeatInfo(seatIndex, extra,
                 new DefauRoomCallback("updateSeatExtra", "更新扩展属性", resultBack));
     }
@@ -345,13 +391,13 @@ public class VoiceRoomApi implements Api {
     @Override
     public void updateSeatCount(int count, IResultBack<Boolean> resultBack) {
         roomInfo.setSeatCount(count);
-        updateRoomInfo(roomInfo, resultBack);
+        updateRoomInfo(roomInfo.clone(), resultBack);
     }
 
     @Override
     public void updateRoomName(String name, IResultBack<Boolean> resultBack) {
         roomInfo.setRoomName(name);
-        updateRoomInfo(roomInfo, resultBack);
+        updateRoomInfo(roomInfo.clone(), resultBack);
     }
 
     /**
@@ -385,15 +431,22 @@ public class VoiceRoomApi implements Api {
 
         @Override
         public void onSuccess() {
+            Logger.d("QuickEventListener", action + "成功");
             if (null != resultBack) resultBack.onResult(true);
             if (!TextUtils.isEmpty(action)) KToast.show(action + "成功", false);
         }
 
         @Override
         public void onError(int i, String s) {
+            Logger.e("QuickEventListener", action + "失败");
             if (!TextUtils.isEmpty(action)) KToast.show(action + "失败", false);
             Log.e(TAG, methodName + "#onError [" + i + "]:" + s);
             if (null != resultBack) resultBack.onResult(false);
+        }
+
+        @Override
+        public void onError(int code, IError error) {
+            RCVoiceRoomCallback.super.onError(code, error);
         }
     }
 }

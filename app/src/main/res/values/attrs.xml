@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- 自定义四角矩形的四个圆角属性 -->
+    <declare-styleable name="RoundHelper" tools:ignore="ResourceName">
+        <attr name="left_top_radius" format="dimension" />
+        <attr name="right_top_radius" format="dimension" />
+        <attr name="left_bottom_radius" format="dimension" />
+        <attr name="right_bottom_radius" format="dimension" />
+        <attr name="radius" format="dimension" />
+    </declare-styleable>
+
+</resources>

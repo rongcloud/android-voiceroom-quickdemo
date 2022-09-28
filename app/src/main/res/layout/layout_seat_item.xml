@@ -9,7 +9,7 @@
     android:layout_height="wrap_content">
 
 
-    <ImageView
+    <cn.rongcloud.round.RoundImageView
         android:id="@+id/iv_portrait"
         android:layout_width="56dp"
         android:layout_height="56dp"
@@ -19,6 +19,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:radius="28dp"
         tools:src="@mipmap/ic_seat_empty" />
 
     <androidx.appcompat.widget.AppCompatImageView
@@ -53,11 +54,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
+        android:ellipsize="end"
+        android:maxLines="1"
         android:textAlignment="textStart"
         android:textColor="@color/black"
         android:textSize="10sp"
-        android:maxLines="1"
-        android:ellipsize="end"
         app:layout_constraintBottom_toTopOf="@+id/member_extra"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -77,6 +78,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/member_name"
         tools:text="@string/app_name" />
+
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/member_audio"
         android:layout_width="wrap_content"

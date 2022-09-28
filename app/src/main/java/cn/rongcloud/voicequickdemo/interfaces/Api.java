@@ -37,6 +37,7 @@ public interface Api {
 
     void leaveRoom(IResultBack<Boolean> resultBack);
 
+    void jumpTo(int index,boolean plugin,IResultBack<Boolean> resultBack);
     /**
      * 全麦锁定
      */
@@ -52,9 +53,9 @@ public interface Api {
 
     void muteSeat(int index, boolean mute, IResultBack<Boolean> resultBack);
 
-    void leaveSeat(IResultBack<Boolean> resultBack);
+    void leaveSeat(boolean plugin,IResultBack<Boolean> resultBack);
 
-    void enterSeat(int index, IResultBack<Boolean> resultBack);
+    void enterSeat(int index,boolean plugin, IResultBack<Boolean> resultBack);
 
     void requestSeat(IResultBack<Boolean> resultBack);
 

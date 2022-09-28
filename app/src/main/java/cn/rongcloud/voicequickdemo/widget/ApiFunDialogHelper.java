@@ -38,14 +38,18 @@ public class ApiFunDialogHelper {
             ApiFun.seat_lock,
             ApiFun.seat_lock_un,
             ApiFun.seat_enter,
+            ApiFun.seat_enter_plugin,
             ApiFun.seat_left,
+            ApiFun.seat_left_plugin,
             ApiFun.seat_request,
             ApiFun.seat_request_cancel,
-            ApiFun.seat_extra,
-            ApiFun.seat_pick_out,
             ApiFun.seat_close_mic,
             ApiFun.seat_open_mic,
-
+            ApiFun.seat_switch,
+            ApiFun.seat_switch_plugin,
+            ApiFun.seat_update,
+            ApiFun.seat_update_plugin,
+            ApiFun.seat_pick_out,
     };
     public final static ApiFun[] ROOM_API = new ApiFun[]{
             ApiFun.room_all_mute,
@@ -375,6 +379,7 @@ public class ApiFunDialogHelper {
                 @Override
                 public void onClick(View view) {
                     if (null != listener) listener.onApiClick(view, s);
+                    seatApi.dismissDialog();
                 }
             });
         }

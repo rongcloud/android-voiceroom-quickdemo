@@ -21,7 +21,7 @@ import com.kit.utils.PermissionUtil;
 public abstract class AbsPermissionActivity extends AppCompatActivity {
     protected final static String[] VOICE_PERMISSIONS = new String[]{
             Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.CAMERA,
+//            Manifest.permission.CAMERA,
     };
     protected final String TAG = getClass().getSimpleName();
     protected Activity activity;

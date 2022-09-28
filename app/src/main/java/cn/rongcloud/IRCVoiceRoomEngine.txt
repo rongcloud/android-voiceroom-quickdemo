@@ -1,0 +1,433 @@
+/*
+ * Copyright © 2021 RongCloud. All rights reserved.
+ */
+
+package cn.rongcloud;
+
+import java.util.List;
+
+import cn.rongcloud.rtc.api.RCRTCConfig;
+import cn.rongcloud.voiceroom.api.callback.RCVoiceRoomCallback;
+import cn.rongcloud.voiceroom.api.callback.RCVoiceRoomEventListener;
+import cn.rongcloud.voiceroom.api.callback.RCVoiceRoomResultCallback;
+import cn.rongcloud.voiceroom.model.AudioQuality;
+import cn.rongcloud.voiceroom.model.AudioScenario;
+import cn.rongcloud.voiceroom.model.PKResponse;
+import cn.rongcloud.voiceroom.model.RCVoiceRoomInfo;
+import cn.rongcloud.voiceroom.model.RCVoiceSeatInfo;
+import io.rong.imlib.IRongCoreListener;
+import io.rong.imlib.model.MessageContent;
+
+/**
+ * 语聊房引擎接口
+ */
+public interface IRCVoiceRoomEngine {
+    /**
+     * 设置房间事件监听
+     * 注意：离开房间后内会自动将监听置空，因此再次加入房间时需要重新设置房间监听
+     * 建议1：避免加房间时的事件丢失，建议在加入房间前设置监听。
+     * 建议2：由于内部使用弱引用，故此处不能使用局部变量，离开房间时可不设置null，内部会自动置空，不影响内存回收。
+     *
+     * @param listener 事件监听
+     */
+    void setVoiceRoomEventListener(RCVoiceRoomEventListener listener);
+
+    /**
+     * 设置rtc 服务地址
+     *
+     * @param url 服务地址
+     */
+    void setMediaServerUrl(String url);
+
+    /**
+     * 增加消息监听
+     * 注意：和 IMLib 的 setMessageRecieveListener 会存在冲突，IMlib 在5.1.5版本已做兼容
+     *
+     * @param listener 接收消息回调 {@link IRongCoreListener.OnReceiveMessageListener}
+     */
+    void addMessageReceiveListener(IRongCoreListener.OnReceiveMessageListener listener);
+
+    /**
+     * 移除消息监听
+     *
+     * @param listener 消息回调 {@link IRongCoreListener.OnReceiveMessageListener}
+     */
+    void removeMessageReceiveListener(IRongCoreListener.OnReceiveMessageListener listener);
+
+    /**
+     * 创建并加入房间
+     * 注意：
+     * 1、不自动上麦，需根据业务确定是否手动上麦
+     * 2、如果房间存在，会重置房间的状态、KV、麦位信息
+     * 3、语聊房的生命周期内，只执行一次，如果多次执行，会重置之前的房间信息
+     *
+     * @param roomId   房间唯一标识
+     * @param roomInfo 房间信息{@link RCVoiceRoomInfo}
+     * @param callback 结果回调 {@link RCVoiceRoomCallback}
+     */
+    @Deprecated
+    void createAndJoinRoom(String roomId, RCVoiceRoomInfo roomInfo, RCVoiceRoomCallback callback);
+
+    /**
+     * 创建并加入房间
+     * 注意：
+     * 1、不自动上麦，需根据业务确定是否手动上麦
+     * 2、如果房间存在，会重置房间的状态、KV、麦位信息
+     * 3、语聊房的生命周期内，只执行一次，如果多次执行，会重置之前的房间信息
+     *
+     * @param rcrtcConfig RTC引擎初始化的配置信息
+     * @param roomId      房间唯一标识
+     * @param roomInfo    房间信息{@link RCVoiceRoomInfo}
+     * @param callback    结果回调 {@link RCVoiceRoomCallback}
+     */
+    void createAndJoinRoom(RCRTCConfig rcrtcConfig, String roomId, RCVoiceRoomInfo roomInfo, RCVoiceRoomCallback callback);
+
+    /**
+     * 加入语聊房，默认使用RTC兼容耳返默认配置初始化RTC引擎
+     * 注意：
+     * 1、如果房间不存在会报错
+     * 2、和 leaveRoom 成对调用
+     * 3、如果连连续调用 joinRoom ，即中间没有调用 leaveRoom ，会报错状态异常：可查看 LogCat
+     * 4、如果已报状态异常，导致无法加入房间：可执行 RCRTCEngine.getInstance().unInit() 重置RTC的缓存状态
+     *
+     * @param roomId   房间唯一标识
+     * @param callback 结果回调 {@link RCVoiceRoomCallback}
+     */
+    @Deprecated
+    void joinRoom(String roomId, RCVoiceRoomCallback callback);
+
+    /**
+     * 加入语聊房，注意：
+     * 1、如果房间不存在会报错
+     * 2、和 leaveRoom 成对调用
+     * 3、如果连连续调用 joinRoom，即中间没有调用 leaveRoom，会报错状态异常：可查看 LogCat
+     * 4、如果已报状态异常，导致无法加入房间：可在加入房间前 RCRTCEngine.getInstance().unInit() 重置RTC的缓存状态
+     *
+     * @param rcrtcConfig RTC 引擎初始化的配置信息
+     * @param roomId      房间唯一标识
+     * @param callback    结果回调 {@link RCVoiceRoomCallback}
+     */
+    void joinRoom(RCRTCConfig rcrtcConfig, String roomId, RCVoiceRoomCallback callback);
+
+    /**
+     * 离开房间，注意：
+     * 1、和 joinRoom/createRoomAndJoin 成对调用
+     * 2、若果 joinRoom 后异常退出，导致无法调用 leaveRoom，再次重启 joinRoom 会报状态异常，
+     * 可在加入房间前RCRTCEngine.getInstance().unInit() 重置RTC的缓存状态
+     *
+     * @param callback 结果回调 {@link RCVoiceRoomCallback}
+     */
+    void leaveRoom(RCVoiceRoomCallback callback);
+
+    /**
+     * 用户上麦
+     *
+     * @param seatIndex 麦位序号
+     * @param callback  结果回调 {@link RCVoiceRoomCallback}
+     */
+    void enterSeat(int seatIndex, RCVoiceRoomCallback callback);
+
+
+    /**
+     * 尝试重启音频采集模块，并重新发布资源
+     * 注意：
+     * 1.麦上主播尝试调用才生效。
+     * 2.上麦前未申请权限，导致音频模块启动失败，导致上麦后未能正常发布资源。使用此api尝试重启音频采集模块，并重新发布资源
+     *
+     * @param callback 回调
+     */
+    void republishStream(RCVoiceRoomCallback callback);
+
+    /**
+     * 用户下麦
+     * 注意：和 enterSeat()成对调用
+     *
+     * @param callback 结果回调 {@link RCVoiceRoomCallback}
+     */
+    void leaveSeat(RCVoiceRoomCallback callback);
+
+    /**
+     * 用户跳麦
+     * 注意：
+     * 1、只有已在麦位上的用户可跳麦
+     * 2、没在麦位上的用户想上麦，请执行：enterSeat
+     *
+     * @param seatIndex 需要跳转的麦位序号
+     * @param callback  结果回调 {@link RCVoiceRoomCallback}
+     */
+    void switchSeatTo(int seatIndex, RCVoiceRoomCallback callback);
+
+    /**
+     * 抱用户上麦
+     *
+     * @param userId   用户 Id
+     * @param callback 结果回调 {@link RCVoiceRoomCallback}
+     */
+    void pickUserToSeat(String userId, RCVoiceRoomCallback callback);
+
+    /**
+     * 踢人下麦
+     *
+     * @param userId   用户 Id
+     * @param callback 结果回调 {@link RCVoiceRoomCallback}
+     */
+    void kickUserFromSeat(String userId, RCVoiceRoomCallback callback);
+
+    /**
+     * 将用户踢出房间
+     *
+     * @param userId   用户 Id
+     * @param callback 结果回调 {@link RCVoiceRoomCallback}
+     */
+    void kickUserFromRoom(String userId, RCVoiceRoomCallback callback);
+
+    /**
+     * 锁麦，注意：如果该麦位上有人，会被踢下麦
+     *
+     * @param seatIndex 麦位序号
+     * @param isLocked  是否锁麦位
+     * @param callback  结果回调 {@link RCVoiceRoomCallback}
+     */
+    void lockSeat(int seatIndex, boolean isLocked, RCVoiceRoomCallback callback);
+
+    /**
+     * 静麦，注意：
+     * 1、可以静麦自己也可以静麦其他人
+     * 2、muteSeat 和 disableAudioRecording 都是操作麦克风状态，后者只能操作自己的麦克风状态，而且修改麦克风状态，该状态不会同步给房间内的其他人
+     *
+     * @param seatIndex 麦位序号
+     * @param isMute    是否静音
+     * @param callback  结果回调
+     */
+    void muteSeat(int seatIndex, boolean isMute, RCVoiceRoomCallback callback);
+
+    /**
+     * 将除自己外的所有麦位:静麦/取消静麦
+     * 注意：
+     * 1、若果 isMute = true，除自己外还有8个麦位，其中有3个已是静麦状态，此时只会静麦其他5个麦位。
+     *
+     * @param isMute 是否静麦
+     */
+    void muteOtherSeats(boolean isMute, RCVoiceRoomCallback callback);
+
+    /**
+     * 静音所有远程音频流
+     *
+     * @param isMute 是否静音
+     */
+    void muteAllRemoteStreams(boolean isMute);
+
+    /**
+     * 静音指定userId主播的的音频流
+     *
+     * @param userId 指定主播的userId
+     * @param mute   是否静音
+     */
+    void muteUser(String userId, boolean mute);
+
+    /**
+     * 将除自己外的所有麦位:锁定/解锁
+     *
+     * @param isLock 是否锁麦
+     */
+    void lockOtherSeats(boolean isLock, final RCVoiceRoomCallback callback);
+
+    /**
+     * 发送房间消息
+     *
+     * @param message  融云消息实体
+     * @param callback 结果回调
+     */
+    void sendRoomMessage(MessageContent message, RCVoiceRoomCallback callback);
+
+    /**
+     * 设置房间信息，房间的id必须与当前房间id一致
+     * 注意：
+     * 1、如果修改seat count属性，lockAll 和 muteAll 将被重置为false 即不会生效。
+     * 2、如果单独修改lockAll属性，和lockOthers()的效果相同
+     * 3、如过单独修改muteAll属性 和 muteOthers的效果相同。
+     *
+     * @param roomInfo 修改的房间信息 {@link RCVoiceRoomInfo}
+     * @param callback 结果回调
+     */
+    void setRoomInfo(RCVoiceRoomInfo roomInfo, RCVoiceRoomCallback callback);
+
+    /**
+     * 停止本地麦克风收音
+     *
+     * @param isDisable 是否停止
+     */
+    void disableAudioRecording(boolean isDisable);
+
+    /**
+     * 麦克风是否禁用标识
+     */
+    boolean isDisableAudioRecording();
+
+    /**
+     * 设置房间音频质量和场景
+     *
+     * @param audioQuality 音频质量
+     * @param scenario     音频场景
+     */
+    void setAudioQuality(AudioQuality audioQuality, AudioScenario scenario);
+
+    /**
+     * 是否使用扬声器
+     *
+     * @param isEnable 是否使用
+     */
+    void enableSpeaker(boolean isEnable);
+
+    /**
+     * 申请上麦
+     *
+     * @param callback 结果回调
+     */
+    void requestSeat(RCVoiceRoomCallback callback);
+
+    /**
+     * 取消申请上麦
+     *
+     * @param callback 结果回调
+     */
+    void cancelRequestSeat(RCVoiceRoomCallback callback);
+
+    /**
+     * 同意用户排麦请求
+     *
+     * @param userId   请求排麦的用户 Id
+     * @param callback 结果回调
+     */
+    void acceptRequestSeat(String userId, RCVoiceRoomCallback callback);
+
+    /**
+     * 拒绝用户排麦请求
+     *
+     * @param userId   被拒绝的申请人的Id
+     * @param callback 结果回调
+     */
+    void rejectRequestSeat(String userId, RCVoiceRoomCallback callback);
+
+
+    /**
+     * 发送自定义请求
+     *
+     * @param content  发送的请求内容
+     * @param callback 结果回调
+     */
+    void sendInvitation(String content, RCVoiceRoomResultCallback<String> callback);
+
+    /**
+     * 取消自己发出的请求
+     *
+     * @param invitationId 请求 Id
+     * @param callback     结果回调
+     */
+    void cancelInvitation(String invitationId, RCVoiceRoomCallback callback);
+
+    /**
+     * 拒绝请求
+     *
+     * @param invitationId 请求的 Id
+     * @param callback     结果回调
+     */
+    void rejectInvitation(String invitationId, RCVoiceRoomCallback callback);
+
+    /**
+     * 同意请求
+     *
+     * @param invitationId 请求 Id
+     * @param callback     结果回调
+     */
+    void acceptInvitation(String invitationId, RCVoiceRoomCallback callback);
+
+    /**
+     * 通知房间所有用户执行某个刷新操作
+     *
+     * @param name     刷新操作的名称
+     * @param content  刷新操作的内容
+     * @param callback 结果回调
+     */
+    void notifyVoiceRoom(String name, String content, RCVoiceRoomCallback callback);
+
+
+    /**
+     * 获取最近所有排麦申请的用户id
+     *
+     * @param callback 结果回调
+     */
+    void getRequestSeatUserIds(RCVoiceRoomResultCallback<List<String>> callback);
+
+    /**
+     * 获取最新麦位信息
+     *
+     * @param resultCallback 结果回调
+     */
+    void getLatestSeatInfo(final RCVoiceRoomResultCallback<List<RCVoiceSeatInfo>> resultCallback);
+
+    /**
+     * 更新指定麦位信息中的extra字段
+     *
+     * @param index 麦位索引
+     * @param extra extra字段值
+     */
+    void updateSeatInfo(int index, String extra, RCVoiceRoomCallback callback);
+
+    /**************************************
+     * voice room 2.0
+     **************************************/
+
+    /**
+     * 发送PK邀请
+     *
+     * @param inviteeRoomId 被邀请用户所在的房间id
+     * @param inviteeUserId 被邀请人的用户id
+     * @param callback      结果回调
+     */
+    void sendPKInvitation(String inviteeRoomId, String inviteeUserId, RCVoiceRoomCallback callback);
+
+    /**
+     * 取消PK邀请
+     *
+     * @param inviteeRoomId 被邀请用户所在的房间id
+     * @param inviteeUserId 被邀请人的用户id
+     * @param callback      结果回调
+     */
+    void cancelPKInvitation(String inviteeRoomId, String inviteeUserId, RCVoiceRoomCallback callback);
+
+    /**
+     * 回复邀请人是否接受邀请
+     *
+     * @param inviterRoomId 邀请人所在的房间id
+     * @param inviterUserId 邀请人的用户id
+     * @param pkResponse    pk邀请的响应状态
+     * @param callback      结果回调
+     */
+    void responsePKInvitation(String inviterRoomId, String inviterUserId, PKResponse pkResponse, RCVoiceRoomCallback callback);
+
+    /**
+     * 屏蔽PK对象的语音
+     *
+     * @param isMute   是否静音
+     * @param callback 结果回调
+     */
+    void mutePKUser(boolean isMute, RCVoiceRoomCallback callback);
+
+    /**
+     * 退出PK
+     */
+    void quitPK(RCVoiceRoomCallback callback);
+
+    /**
+     * 快速进入pk
+     * 注意：
+     * 1、此方法跳过邀请，直接进入pk阶段
+     * 2、执行该方法以后，只能执行quitPk 退出pk
+     *
+     * @param inviteeRoomId 被邀请用户所在的房间id
+     * @param inviteeUserId 被邀请人的用户id
+     */
+    void resumePk(String inviteeRoomId, String inviteeUserId, RCVoiceRoomCallback callback);
+
+}

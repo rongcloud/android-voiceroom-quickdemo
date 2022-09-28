@@ -1,5 +1,7 @@
 package cn.rongcloud.voicequickdemo;
 
+import static cn.rongcloud.voicequickdemo.AbsPermissionActivity.VOICE_PERMISSIONS;
+
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,8 +22,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bcq.adapter.recycle.RcyHolder;
 import com.bcq.adapter.recycle.RcySAdapter;
 import com.kit.UIKit;
+import com.kit.cache.GsonUtil;
 import com.kit.utils.KToast;
 import com.kit.utils.Logger;
+import com.kit.utils.PermissionUtil;
 import com.kit.wapper.IResultBack;
 
 import java.util.List;
@@ -34,9 +39,14 @@ import cn.rongcloud.pk.PKApi;
 import cn.rongcloud.pk.RoomOwerDialog;
 import cn.rongcloud.voicequickdemo.uitls.AccoutManager;
 import cn.rongcloud.voicequickdemo.widget.ApiFunDialogHelper;
+import cn.rongcloud.voiceroom.api.RCVoiceRoomEngine;
+import cn.rongcloud.voiceroom.api.callback.IError;
+import cn.rongcloud.voiceroom.api.callback.RCVoiceRoomCallback;
 import cn.rongcloud.voiceroom.model.RCVoiceRoomInfo;
 import cn.rongcloud.voiceroom.utils.VMLog;
-import io.rong.imlib.RongIMClient;
+import io.rong.imlib.IRongCoreCallback;
+import io.rong.imlib.IRongCoreEnum;
+import io.rong.imlib.chatroom.base.RongChatRoomClient;
 import io.rong.imlib.model.ChatRoomInfo;
 
 /**
@@ -112,6 +122,8 @@ public class RoomActivity extends AppCompatActivity implements
         QuickEventListener.get().register(this, owner);
         joinRoom();
         refreshMembers();
+        // 加入房间后
+        // RCKTVManager.getInstance().startListener(roomId, null);
     }
 
     void joinRoom() {
@@ -128,7 +140,7 @@ public class RoomActivity extends AppCompatActivity implements
                 if (result) {// 加入房间成功 后跟新在线麦位数
                     onOnLineCount();
                     if (enter) {
-                        VoiceRoomApi.getApi().enterSeat(0, null);
+                        VoiceRoomApi.getApi().enterSeat(0, false,null);
                     }
                     NotificationService.bindNotifyService(RoomActivity.this, ACTION_NOTIFY);
                 }
@@ -155,10 +167,10 @@ public class RoomActivity extends AppCompatActivity implements
     @Override
     public void onOnLineCount() {
         refreshMembers();
-        RongIMClient.getInstance().getChatRoomInfo(roomId,
+        RongChatRoomClient.getInstance().getChatRoomInfo(roomId,
                 0,
                 ChatRoomInfo.ChatRoomMemberOrder.RC_CHAT_ROOM_MEMBER_ASC,
-                new RongIMClient.ResultCallback<ChatRoomInfo>() {
+                new IRongCoreCallback.ResultCallback<ChatRoomInfo>() {
                     @Override
                     public void onSuccess(ChatRoomInfo chatRoomInfo) {
                         int onlineCount = null == chatRoomInfo ? 0 : chatRoomInfo.getTotalMemberCount();
@@ -171,7 +183,7 @@ public class RoomActivity extends AppCompatActivity implements
                     }
 
                     @Override
-                    public void onError(RongIMClient.ErrorCode errorCode) {
+                    public void onError(IRongCoreEnum.CoreErrorCode errorCode) {
                         VMLog.e(TAG, "getOnLineUserCount#onError" + errorCode);
                     }
                 });
@@ -219,11 +231,9 @@ public class RoomActivity extends AppCompatActivity implements
         online_count = findViewById(R.id.online_count);
         findViewById(R.id.leave).setOnClickListener(this);
         findViewById(R.id.close).setOnClickListener(this);
-        findViewById(R.id.solo).setOnClickListener(this);
-        findViewById(R.id.chorus).setOnClickListener(this);
-        findViewById(R.id.stop).setOnClickListener(this);
-        findViewById(R.id.pause).setOnClickListener(this);
-        findViewById(R.id.resume).setOnClickListener(this);
+        findViewById(R.id.pull).setOnClickListener(this);
+        findViewById(R.id.message).setOnClickListener(this);
+        findViewById(R.id.permission).setOnClickListener(this);
         findViewById(R.id.close).setVisibility(owner ? View.VISIBLE : View.GONE);
     }
 
@@ -310,112 +320,52 @@ public class RoomActivity extends AppCompatActivity implements
                     }
                 }
             });
-        } else if (R.id.stop == id) {
-//            RCKTVManager.getInstance().stop(new RCVoiceRoomCallback() {
-//                @Override
-//                public void onSuccess() {
-//                    Logger.e("stop#onSuccess: ");
-//                }
-//
-//                @Override
-//                public void onError(int code, IError error) {
-//                    Logger.e("stop#onError: " + error.toJson());
-//                }
-//            });
-        } else if (R.id.pause == id) {
-//            RCKTVManager.getInstance().pause(new RCVoiceRoomCallback() {
-//                @Override
-//                public void onSuccess() {
-//                    Logger.e("pause#onSuccess: ");
-//                }
-//
-//                @Override
-//                public void onError(int code, IError error) {
-//                    Logger.e("pause#onError: " + error.toJson());
-//                }
-//            });
-        } else if (R.id.resume == id) {
-//            RCKTVManager.getInstance().resume(new RCVoiceRoomCallback() {
-//                @Override
-//                public void onSuccess() {
-//                    Logger.e("resume#onSuccess: ");
-//                }
-//
-//                @Override
-//                public void onError(int code, IError error) {
-//                    Logger.e("resume#onError: " + error.toJson());
-//                }
-//            });
-        } else if (R.id.chorus == id) {
-            if (TextUtils.isEmpty(onSeatUserId)) {
-                KToast.show("合唱至少需要两个主播");
-                return;
+        } else if (R.id.pull == id) {
+//            String _18510371541 = "0adcae89-061d-4396-82e5-e0827d5bb2c9";
+            // 测试拉取07-06 15:00:00 ~ 16:00:00的日志
+//            LogPuller.getPuller().pullVoiceRoomLocalLog(_18510371541, 7, 6, 18);
+        } else if (R.id.permission == id) {
+            if (PermissionUtil.checkPermissions(this, VOICE_PERMISSIONS)) {
+                KToast.show("已经有麦克风权限啦");
             }
-            String path = getFilesPath();
-            path = path + "/test/test.mp3";
-            Logger.e(TAG, "path = " + path);
+        } else if (R.id.message == id) {
+            RCVoiceRoomEngine.getInstance().notifyVoiceRoom("sendMessge", "我是测试消息", new RCVoiceRoomCallback() {
+                @Override
+                public void onSuccess() {
+                }
 
-            String currentId = AccoutManager.getCurrentId();
-//            RCChorusConfig config = RCChorusConfig.formFile(roomId, new File(path));
-//            if (owner) {
-//                // 主唱
-//                config.setLeadId(currentId);
-//                config.applyChorus(onSeatUserId);
-//            } else {
-//                //副唱
-//                config.setLeadId(onSeatUserId);
-//                config.applyChorus(currentId);
-//            }
-//            RCKTVManager.getInstance().chorus(config, rcktvCallback);
-        } else if (R.id.solo == id) {
-            String path = getFilesPath();
-//            path = path + "/test/变了";
-//            path = path + "/test/test.mp3";
-//            Logger.e(TAG, "path = " + path);
-//            RCSoloConfig config = RCSoloConfig.formFile(roomId, new File(path));
-//            RCKTVManager.getInstance().solo(config, rcktvCallback);
+                @Override
+                public void onError(int code, String message) {
+                    Logger.e(TAG, "notifyVoiceRoom#onError: [" + code + "] msg = " + message);
+                }
+            });
         }
     }
 
-//    private RCKTVCallback rcktvCallback = new RCKTVCallback() {
-//        @Override
-//        public void onStart() {
-//            Logger.e("onStart");
-//        }
-//
-//        @Override
-//        public void onPause() {
-//            Logger.e("onPause");
-//        }
-//
-//        @Override
-//        public void onResume() {
-//            Logger.e("onResume");
-//        }
-//
-//        @Override
-//        public void onStop() {
-//            Logger.e("onStop");
-//        }
-//
-//        @Override
-//        public void onComplete() {
-//            Logger.e("onComplete");
-//        }
-//
-//        @Override
-//        public void onProgress(float progress, long duration) {
-//            Logger.e("onProgress: progress = " + progress + " duration = " + duration);
-//        }
-//
-//        @Override
-//        public void onError(int code, IError error) {
-//            Logger.e("onError: " + error.toJson());
-//        }
-//    };
-    // /storage/emulated/0/变了
-    private String path = "/storage/emulated/0/Android/data/cn.rongcloud.voiceroomdemo.dev/files/Music/变了";
+    public static int permissionIndex = 0;
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (PermissionUtil.REQUEST_CODE == requestCode) {
+            String[] arr = PermissionUtil.getDeniedPermissions(this, permissions);
+            Logger.e(TAG, "arr = " + GsonUtil.obj2Json(arr));
+            boolean accept = null == arr || 0 == arr.length;
+            if (accept) {
+                RCVoiceRoomEngine.getInstance().republishStream(new RCVoiceRoomCallback() {
+                    @Override
+                    public void onSuccess() {
+                        Logger.e(TAG, "republishStream");
+                    }
+
+                    @Override
+                    public void onError(int code, String error) {
+                        Logger.e(TAG);
+                    }
+                });
+            }
+        }
+    }
 
     /**
      * 获取文件存储根路径：

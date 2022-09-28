@@ -18,6 +18,7 @@ import com.kit.UIKit;
 import com.kit.cache.GsonUtil;
 import com.kit.utils.KToast;
 import com.kit.utils.Logger;
+import com.kit.utils.ResUtil;
 import com.kit.wapper.IResultBack;
 
 import java.util.ArrayList;
@@ -89,7 +90,7 @@ public class RoomListActivity extends AbsPermissionActivity {
         adapter = new RcySAdapter<VoiceRoom, RcyHolder>(this, R.layout.layout_room_item) {
             @Override
             public void convert(RcyHolder holder, VoiceRoom room, int position) {
-                holder.setBackgroundResource(R.id.room_theme, R.mipmap.img_room_them);
+                holder.setImageDrawable(R.id.room_theme, ResUtil.getDrawable(R.mipmap.img_room_them));
                 holder.setText(R.id.room_name, room.getRoomName());
                 holder.setText(R.id.user_id, room.getCreateUser().getUserName());
                 holder.itemView.setOnClickListener(new View.OnClickListener() {

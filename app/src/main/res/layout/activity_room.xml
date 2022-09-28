@@ -65,60 +65,45 @@
         android:layout_marginTop="20dp"
         android:orientation="horizontal">
 
-
         <Button
-            android:id="@+id/solo"
-            android:layout_width="55dp"
+            android:id="@+id/pull"
+            android:layout_width="wrap_content"
             android:layout_height="42dp"
             android:gravity="center"
-            android:padding="0dp"
-            android:text="独唱"
+            android:paddingStart="5dp"
+            android:paddingTop="0dp"
+            android:paddingEnd="5dp"
+            android:paddingBottom="0dp"
+            android:text="拉取日志"
             android:textColor="@color/white"
             android:textSize="14sp" />
 
         <Button
-            android:id="@+id/chorus"
-            android:layout_width="55dp"
-            android:layout_height="42dp"
-            android:layout_marginLeft="10dp"
-            android:gravity="center"
-            android:padding="0dp"
-            android:text="合唱"
-            android:textColor="@color/white"
-            android:textSize="14sp" />
-
-        <Button
-            android:id="@+id/pause"
-            android:layout_width="55dp"
+            android:id="@+id/permission"
+            android:layout_width="wrap_content"
             android:layout_height="42dp"
             android:layout_marginLeft="10dp"
             android:gravity="center"
-            android:padding="0dp"
-            android:text="暂停"
+            android:paddingStart="5dp"
+            android:paddingTop="0dp"
+            android:paddingEnd="5dp"
+            android:paddingBottom="0dp"
+            android:text="申请权限"
             android:textColor="@color/white"
             android:textSize="14sp" />
-
         <Button
-            android:id="@+id/resume"
-            android:layout_width="55dp"
+            android:id="@+id/message"
+            android:layout_width="wrap_content"
             android:layout_height="42dp"
             android:layout_marginLeft="10dp"
             android:gravity="center"
-            android:padding="0dp"
-            android:text="恢复"
+            android:paddingStart="5dp"
+            android:paddingTop="0dp"
+            android:paddingEnd="5dp"
+            android:paddingBottom="0dp"
+            android:text="发消息"
             android:textColor="@color/white"
             android:textSize="14sp" />
 
-        <Button
-            android:id="@+id/stop"
-            android:layout_width="55dp"
-            android:layout_height="42dp"
-            android:layout_marginLeft="10dp"
-            android:gravity="center"
-            android:padding="0dp"
-            android:text="停止"
-            android:textColor="@color/white"
-            android:textSize="14sp" />
     </LinearLayout>
-
 </androidx.appcompat.widget.LinearLayoutCompat>

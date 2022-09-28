@@ -35,20 +35,33 @@ android {
     }
 }
 
+// 定义是否使用本地 aar 0：不使用  1：使用aar
+def userAar = 0
+
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.3.1'
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
 
-    implementation 'cn.rongcloud.sdk:im_kit:5.1.8'//演示UserManager时使用
-//    implementation 'cn.rongcloud.sdk:im_lib:5.1.8'
-    implementation 'cn.rongcloud.sdk:rtc_lib:5.1.16'
-    implementation 'cn.rongcloud.sdk:voiceroom_lib:2.0.8.4'
+    //为演示UserManager才依赖im_kit，如不需要聊天ui 直接依赖同版本im_lib
+    implementation 'cn.rongcloud.sdk:im_kit:5.2.5.1'
+    // implementation 'cn.rongcloud.sdk:im_lib:5.2.5.1'
+    implementation 'cn.rongcloud.sdk:rtc_lib:5.2.5.1'
+
+    // 语聊房SDK
+    if (userAar == 1) {
+        implementation fileTree(includes: ['*.jar', '*.aar'], dir: 'libs')
+        // 使用aar 需收到依赖log
+        implementation "cn.rongcloud.sdk:rclogger_lib:1.0.5"
+    } else {
+        // RCVoiceRoomEngine.getPlugin()在2.1.1版本添加的扩展 api, 如果使用低版本会报错，注释掉即可。
+        implementation 'cn.rongcloud.sdk:voiceroom_lib:2.1.1'
+    }
 
     // adapter 封装
-    api 'com.github.lbasis:adapter:1.0.2'
+    api 'com.github.lbasis:adapter:1.0.3'
     api 'com.github.lbasis:kit:1.0.1'
     api 'com.github.lbasis:refresh:1.0.1'
-    api 'com.squareup.okhttp3:okhttp:4.9.0'
+    api 'com.squareup.okhttp3:okhttp:4.9.3'
 
 }
